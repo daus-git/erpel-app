@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "type": "whatsapp",
+    "name": "Order Confirmation",
+    "subject": null,
+    "template": "Halo! Pesanan Anda telah dikonfirmasi.\n\nDetail Pesanan:\n{orderDetails}\n\nTerima kasih telah memilih salon kami!"
+  },
+  {
+    "id": 2,
+    "type": "whatsapp",
+    "name": "Appointment Reminder",
+    "subject": null,
+    "template": "Halo! Reminder janji temu Anda:\n\nLayanan: {serviceName}\nTanggal: {date}\nWaktu: {time}\n\nMohon datang 15 menit sebelum waktu yang dijadwalkan."
+  },
+  {
+    "id": 3,
+    "type": "whatsapp",
+    "name": "Status Update",
+    "subject": null,
+    "template": "Update Status Pesanan #{orderId}:\n{statusMessage}"
+  },
+  {
+    "id": 4,
+    "type": "email",
+    "name": "Order Confirmation",
+    "subject": "Konfirmasi Pesanan SalonApp",
+    "template": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><h2 style=\"color: #B08C6A;\">Halo {customerName}!</h2><p>Pesanan Anda telah dikonfirmasi. Berikut detail pesanan:</p><div style=\"background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;\">{orderDetails}</div><p>Terima kasih telah memilih salon kami!</p><p style=\"color: #666; font-size: 12px;\">SalonApp Team</p></div>"
+  },
+  {
+    "id": 5,
+    "type": "email",
+    "name": "Appointment Reminder",
+    "subject": "Reminder Janji Temu SalonApp",
+    "template": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><h2 style=\"color: #B08C6A;\">Reminder Janji Temu</h2><p>Halo {customerName},</p><p>Ini adalah reminder untuk janji temu Anda:</p><div style=\"background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;\"><p><strong>Layanan:</strong> {serviceName}</p><p><strong>Tanggal:</strong> {date}</p><p><strong>Waktu:</strong> {time}</p></div><p>Mohon datang 15 menit sebelum waktu yang dijadwalkan.</p><p style=\"color: #666; font-size: 12px;\">SalonApp Team</p></div>"
+  },
+  {
+    "id": 6,
+    "type": "email",
+    "name": "Status Update",
+    "subject": "Update Status Pesanan #{orderId}",
+    "template": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><h2 style=\"color: #B08C6A;\">Update Status Pesanan</h2><p>Halo {customerName},</p><p>Status pesanan Anda (#{orderId}) telah diperbarui:</p><div style=\"background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;\"><p style=\"font-size: 18px; font-weight: bold; color: #B08C6A;\">{statusMessage}</p></div><p>Jika Anda memiliki pertanyaan, silakan hubungi kami.</p><p style=\"color: #666; font-size: 12px;\">SalonApp Team</p></div>"
+  }
+]

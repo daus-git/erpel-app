@@ -1,0 +1,289 @@
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <button @click="$router.go(-1)" class="mr-4 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            <h1 class="text-xl font-bold text-gray-900">Keranjang Belanja</h1>
+          </div>
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-600">{{ cartItems.length }} item{{ cartItems.length !== 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style="padding-top: 80px;">
+      <!-- Empty Cart -->
+      <div v-if="cartItems.length === 0" class="text-center py-16">
+        <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5H19M7 13v8a2 2 0 002 2h10a2 2 0 002-2v-3"></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Keranjang Kosong</h2>
+        <p class="text-gray-600 mb-6">Belum ada item di keranjang Anda</p>
+        <router-link to="/dashboard" class="bg-salon-accent1 hover:bg-salon-accent1/80 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+          Mulai Belanja
+        </router-link>
+      </div>
+
+      <!-- Cart Items -->
+      <div v-else class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="divide-y divide-gray-200">
+            <div v-for="(item, index) in cartItems" :key="item.id" class="p-6">
+              <div class="flex items-center space-x-4">
+                <img :src="item.image" :alt="item.name" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-gray-900">{{ item.name }}</h3>
+                  <p class="text-sm text-gray-600">{{ item.type === 'service' ? item.duration : item.category }}</p>
+
+                  <!-- Service Booking Details -->
+                  <div v-if="item.type === 'service' && (item.date || item.time || item.staff)" class="mt-2 p-3 bg-salon-accent1/10 rounded-lg border border-salon-accent1/20">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                      <div v-if="item.date" class="flex items-center space-x-1">
+                        <svg class="h-4 w-4 text-salon-accent1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="text-salon-accent1 font-medium">{{ formatDate(item.date) }}</span>
+                      </div>
+                      <div v-if="item.time" class="flex items-center space-x-1">
+                        <svg class="h-4 w-4 text-salon-accent1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-salon-accent1 font-medium">{{ item.time }}</span>
+                      </div>
+                      <div v-if="item.staff" class="flex items-center space-x-1">
+                        <svg class="h-4 w-4 text-salon-accent1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span class="text-salon-accent1 font-medium">{{ item.staff }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between mt-2">
+                    <span class="text-salon-accent1 font-bold text-lg">Rp {{ item.price.toLocaleString() }}</span>
+                    <div class="flex items-center space-x-2">
+                      <button @click="updateQuantity(index, item.quantity - 1)" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                        <svg class="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                        </svg>
+                      </button>
+                      <span class="w-8 text-center font-medium">{{ item.quantity }}</span>
+                      <button @click="updateQuantity(index, item.quantity + 1)" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                        <svg class="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <button @click="removeItem(index)" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Ringkasan Pesanan</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Subtotal ({{ totalItems }} item{{ totalItems !== 1 ? 's' : '' }})</span>
+              <span class="font-medium">Rp {{ subtotal.toLocaleString() }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Biaya Layanan</span>
+              <span class="font-medium">Rp {{ serviceFee.toLocaleString() }}</span>
+            </div>
+            <div class="border-t border-gray-200 pt-3">
+              <div class="flex justify-between text-lg font-bold">
+                <span>Total</span>
+                <span class="text-salon-accent1">Rp {{ total.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-6 space-y-3">
+            <button @click="showPaymentOptions = true" class="w-full bg-salon-accent1 hover:bg-salon-accent1/80 text-white py-3 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
+              Lanjutkan ke Pembayaran
+            </button>
+          </div>
+
+          <!-- Payment Options Modal -->
+          <div v-if="showPaymentOptions" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 class="text-lg font-bold text-gray-900 mb-4">Pilih Metode Pembayaran</h3>
+              <div class="space-y-3">
+                <button @click="selectPaymentMethod('gateway')" class="w-full p-4 border border-gray-300 rounded-lg hover:border-salon-accent1 hover:bg-salon-accent1/5 transition-colors text-left">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-900">Payment Gateway</p>
+                      <p class="text-sm text-gray-600">Bayar online dengan kartu kredit/debit</p>
+                    </div>
+                  </div>
+                </button>
+                <button @click="selectPaymentMethod('store')" class="w-full p-4 border border-gray-300 rounded-lg hover:border-salon-accent1 hover:bg-salon-accent1/5 transition-colors text-left">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-900">Bayar di Toko</p>
+                      <p class="text-sm text-gray-600">Bayar langsung saat datang ke salon</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              <div class="flex space-x-2 mt-6">
+                <button @click="showPaymentOptions = false" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg font-medium">
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'CartView',
+  data() {
+    return {
+      cartItems: [],
+      showPaymentOptions: false
+    }
+  },
+  computed: {
+    subtotal() {
+      return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+    },
+    serviceFee() {
+      return Math.round(this.subtotal * 0.05) // 5% service fee
+    },
+    total() {
+      return this.subtotal + this.serviceFee
+    },
+    totalItems() {
+      return this.cartItems.reduce((total, item) => total + item.quantity, 0)
+    }
+  },
+  methods: {
+    loadCart() {
+      const cart = JSON.parse(localStorage.getItem('salon-cart') || '[]')
+      this.cartItems = cart
+    },
+    updateQuantity(index, newQuantity) {
+      if (newQuantity <= 0) {
+        this.removeItem(index)
+        return
+      }
+      this.cartItems[index].quantity = newQuantity
+      this.saveCart()
+    },
+    removeItem(index) {
+      this.cartItems.splice(index, 1)
+      this.saveCart()
+    },
+    saveCart() {
+      localStorage.setItem('salon-cart', JSON.stringify(this.cartItems))
+    },
+    formatDate(dateString) {
+      if (!dateString) return ''
+      const date = new Date(dateString)
+      return date.toLocaleDateString('id-ID', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    },
+    selectPaymentMethod(method) {
+      if (method === 'gateway') {
+        // Dummy payment gateway - simulate payment process
+        alert('Redirecting to payment gateway... (This is a dummy implementation)')
+        // In a real app, this would redirect to a payment gateway like Midtrans, Stripe, etc.
+        setTimeout(() => {
+          this.completeOrder('gateway')
+        }, 2000)
+      } else if (method === 'store') {
+        // Pay at store - mark order as pending payment
+        this.completeOrder('store')
+      }
+      this.showPaymentOptions = false
+    },
+    completeOrder(paymentMethod) {
+      // Create order record
+      const order = {
+        id: `order-${Date.now()}`,
+        userId: JSON.parse(localStorage.getItem('currentUser')).email,
+        userName: JSON.parse(localStorage.getItem('currentUser')).name,
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        status: paymentMethod === 'store' ? 'Pending Payment' : 'Processing',
+        total: this.total,
+        paymentMethod: paymentMethod,
+        items: this.cartItems.map(item => ({
+          type: item.type,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          staff: item.staff || null,
+          date: item.date || null,
+          time: item.time || null
+        }))
+      }
+
+      // Save to history (in a real app, this would be an API call)
+      const history = JSON.parse(localStorage.getItem('order-history') || '[]')
+      history.push(order)
+      localStorage.setItem('order-history', JSON.stringify(history))
+
+      // Clear cart
+      this.cartItems = []
+      localStorage.removeItem('salon-cart')
+
+      // Show success message
+      const methodText = paymentMethod === 'store' ? 'di toko' : 'melalui gateway pembayaran'
+      alert(`Pesanan berhasil dibuat! Silakan bayar ${methodText}.`)
+
+      // Redirect to dashboard
+      this.$router.push('/dashboard')
+    }
+  },
+  mounted() {
+    this.loadCart()
+  }
+}
+</script>
+
+<style scoped>
+/* Custom scrollbar for webkit browsers */
+.divide-y > :not([hidden]) ~ :not([hidden]) {
+  --tw-divide-y-reverse: 0;
+  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
+}
+</style>
