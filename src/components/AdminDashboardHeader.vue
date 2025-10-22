@@ -8,22 +8,22 @@
           <button
             @click="$emit('open-camera')"
             type="button"
-            class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 w-full sm:w-auto"
+            class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 w-full sm:w-auto md:px-3 md:py-1.5 md:gap-1 md:text-sm lg:px-3 lg:py-1.5 max-w-[140px] md:max-w-[120px] whitespace-nowrap truncate"
           >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-5 w-5 md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M3 9a2 2 0 012-2h1.586A2 2 0 008.172 6l.707-.707A2 2 0 0110.293 5h3.414a2 2 0 011.414.586L16.828 6A2 2 0 0018.414 7H19a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span class="hidden sm:inline">Scan QR</span>
-            <span class="sm:hidden">QR</span>
+            <span class="hidden sm:inline md:text-sm">Scan QR</span>
+            <span class="sm:hidden md:text-sm">QR</span>
           </button>
 
           <button
             @click="$emit('logout')"
             type="button"
-            class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium w-full sm:w-auto"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium w-full sm:w-auto md:px-3 md:py-1.5 md:text-sm lg:px-3 lg:py-1.5 max-w-[140px] md:max-w-[120px] whitespace-nowrap truncate"
           >
             Logout
           </button>

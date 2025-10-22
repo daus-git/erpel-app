@@ -6,7 +6,7 @@
     "price": 25000,
     "category": "Hair Care",
     "stock": 50,
-    "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=150&h=150&fit=crop&crop=center"
+    "image": "/shampoo.jpg"
   },
   {
     "id": 2,
@@ -15,7 +15,7 @@
     "price": 30000,
     "category": "Hair Care",
     "stock": 45,
-    "image": "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=150&h=150&fit=crop&crop=center"
+    "image": "/hairconditioner.jpg"
   },
   {
     "id": 3,
@@ -24,7 +24,7 @@
     "price": 45000,
     "category": "Skincare",
     "stock": 30,
-    "image": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=150&h=150&fit=crop&crop=center"
+    "image": "/facecream.jpg"
   },
   {
     "id": 4,
@@ -33,7 +33,7 @@
     "price": 35000,
     "category": "Nail Care",
     "stock": 25,
-    "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=150&h=150&fit=crop&crop=center"
+    "image": "/nailpolishset.jpg"
   },
   {
     "id": 5,
@@ -42,7 +42,7 @@
     "price": 40000,
     "category": "Body Care",
     "stock": 40,
-    "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=150&h=150&fit=crop&crop=center"
+    "image": "/bodylotion.jpg"
   },
   {
     "id": 6,
@@ -51,6 +51,6 @@
     "price": 20000,
     "category": "Hair Care",
     "stock": 60,
-    "image": "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=150&h=150&fit=crop&crop=center"
+    "image": "/hairstylinggel.jpg"
   }
 ]

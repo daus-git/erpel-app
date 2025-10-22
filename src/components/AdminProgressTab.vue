@@ -1,45 +1,77 @@
 <template>
-  <div class="bg-white shadow rounded-lg">
-    <div class="px-4 py-5 sm:p-6">
-      <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Customer Progress</h3>
+  <div class="p-4 bg-white rounded-lg shadow-md">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800">Service Progress</h2>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-salon-accent1 text-white">
+          <tr>
+            <th class="px-4 py-2 text-left text-sm font-semibold">Time</th>
+            <th class="px-4 py-2 text-left text-sm font-semibold">Customer</th>
+            <th class="px-4 py-2 text-left text-sm font-semibold">Service</th>
+            <th class="px-4 py-2 text-left text-sm font-semibold">Staff</th>
+            <th class="px-4 py-2 text-left text-sm font-semibold">Status</th>
+          </tr>
+        </thead>
 
-      <div class="overflow-x-auto -mx-4 sm:mx-0">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="row in progressData" :key="row.id">
-              <td class="px-6 py-4 text-sm text-gray-900"><div class="max-w-[14rem] truncate">{{ row.customer }}</div></td>
-              <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ row.time }}</td>
-              <td class="px-6 py-4 text-sm">
-                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">{{ row.status }}</span>
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-900"><div class="max-w-[16rem] truncate">{{ row.service }}</div></td>
-              <td class="px-6 py-4 text-sm text-gray-900"><div class="max-w-[12rem] truncate">{{ row.staff }}</div></td>
-              <td class="px-6 py-4 text-sm">
-                <div class="flex flex-wrap gap-2">
-                  <button @click="$emit('update-progress-status', row)" class="text-indigo-600 hover:text-indigo-900">Update</button>
-                  <button @click="$emit('delete-progress', row)" class="text-red-600 hover:text-red-800">Delete</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-
-        </table>
-      </div>
+        <tbody class="divide-y divide-gray-200">
+          <tr 
+            v-for="item in progressList" 
+            :key="item.id" 
+            class="hover:bg-gray-50 transition duration-150"
+          >
+            <td class="px-4 py-2 text-sm text-gray-700">{{ item.time }}</td>
+            <td class="px-4 py-2 text-sm text-gray-800 font-medium">
+              {{ item.customerName }}
+            </td>
+            <td class="px-4 py-2 text-sm text-gray-700">{{ item.serviceType }}</td>
+            <td class="px-4 py-2 text-sm text-gray-700">{{ item.staff }}</td>
+            <td class="px-4 py-2 text-sm">
+              <select
+                v-model="item.status"
+                @change="updateStatus(item)"
+                class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-salon-accent1 focus:border-salon-accent1"
+              >
+                <option>Waiting</option>
+                <option>Scheduled</option>
+                <option>In Progress</option>
+                <option>Completed</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
 
 <script>
-export default { name: 'AdminProgressTab', props: { progressData: Array }, emits: ['update-progress-status', 'delete-progress'] }
+import progressData from '@/data/progress.json'
+
+export default {
+  name: 'AdminProgressTab',
+  data() {
+    return {
+      progressList: [...progressData],
+    }
+  },
+  methods: {
+    updateStatus(item) {
+      console.log(`Status for ${item.customerName} changed to: ${item.status}`)
+      // 🚀 di sini bisa ditambah request ke API untuk update di server
+      // contoh:
+      // fetch(`/api/progress/${item.id}`, {
+      //   method: 'PUT',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ status: item.status })
+      // })
+    },
+  },
+}
 </script>
+
+<style scoped>
+select {
+  min-width: 130px;
+}
+</style>

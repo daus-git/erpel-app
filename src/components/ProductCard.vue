@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
+  <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden min-h-[24rem]">
     <div class="relative">
       <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover">
       <div class="absolute top-4 right-4">
