@@ -7,20 +7,30 @@
         <p class="mt-1 text-sm text-gray-500">Manage WhatsApp and Email message templates</p>
       </div>
 
-<button
-  @click="showAddTemplateModal = true"
-  class="inline-flex items-center justify-center
-         text-white bg-salon-accent1 hover:bg-salon-accent2
-         px-4 py-2 sm:px-5 sm:py-2
-         text-sm sm:text-base
-         rounded-md font-medium shadow-sm
-         transition-all duration-200"
->
-  + Add Template
-</button>
-
-
-
+      <div class="flex gap-2">
+        <button
+          @click="printPDF"
+          class="inline-flex items-center justify-center
+                 text-white bg-salon-accent1 hover:bg-salon-accent2
+                 px-4 py-2 sm:px-5 sm:py-2
+                 text-sm sm:text-base
+                 rounded-md font-medium shadow-sm
+                 transition-all duration-200"
+        >
+          Print PDF
+        </button>
+        <button
+          @click="showAddTemplateModal = true"
+          class="inline-flex items-center justify-center
+                 text-white bg-salon-accent1 hover:bg-salon-accent2
+                 px-4 py-2 sm:px-5 sm:py-2
+                 text-sm sm:text-base
+                 rounded-md font-medium shadow-sm
+                 transition-all duration-200"
+        >
+          + Add Template
+        </button>
+      </div>
     </div>
 
     <!-- Template List -->
@@ -130,6 +140,8 @@
 </template>
 
 <script>
+import { generatePDF } from '@/utils/pdfGenerator.js'
+
 export default {
   name: 'AdminTemplatesTab',
   props: { templates: Array },
@@ -155,6 +167,33 @@ export default {
       this.showAddTemplateModal = false
       this.editingTemplate = null
       this.currentTemplate = { type: 'whatsapp', name: '', subject: '', template: '' }
+    },
+    async printPDF() {
+      // For templates, we need to create a temporary table since it's displayed as list
+      const tempTable = document.createElement('table')
+      tempTable.style.width = '100%'
+      tempTable.style.borderCollapse = 'collapse'
+      tempTable.innerHTML = `
+        <thead style="background-color: #f3f4f6;">
+          <tr>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Name</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Type</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Template</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${this.templates.map(template => `
+            <tr>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${template.name}</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${template.type.toUpperCase()}</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${template.template.replace(/<br>/g, '\n')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `
+      document.body.appendChild(tempTable)
+      await generatePDF(tempTable, 'Message Templates')
+      document.body.removeChild(tempTable)
     }
   }
 }

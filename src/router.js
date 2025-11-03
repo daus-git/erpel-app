@@ -3,6 +3,7 @@ import Login from './views/Login.vue'
 import Register from './views/Register.vue'
 import Dashboard from './views/Dashboard.vue'
 import Cart from './views/Cart.vue'
+import PaymentGateway from './views/PaymentGateway.vue'
 import Account from './views/Account.vue'
 import History from './views/History.vue'
 import CheckIn from './views/CheckIn.vue'
@@ -32,6 +33,11 @@ const routes = [
     path: '/cart',
     name: 'Cart',
     component: Cart
+  },
+  {
+    path: '/payment-gateway',
+    name: 'PaymentGateway',
+    component: PaymentGateway
   },
   {
     path: '/account',

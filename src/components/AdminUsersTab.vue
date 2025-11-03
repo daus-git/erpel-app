@@ -7,12 +7,20 @@
           <h3 class="text-lg font-semibold text-gray-900">Users Management</h3>
           <p class="text-gray-500 text-sm">Manage registered salon users</p>
         </div>
-        <button
-          @click="$emit('add-user')"
-          class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
-        >
-          + Add User
-        </button>
+        <div class="flex gap-2">
+          <button
+            @click="printPDF"
+            class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+          >
+            Print PDF
+          </button>
+          <button
+            @click="$emit('add-user')"
+            class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+          >
+            + Add User
+          </button>
+        </div>
       </div>
 
       <!-- Table -->
@@ -83,6 +91,7 @@
 
 <script>
 import usersData from '@/data/users.json' // pastikan file users.json ada di folder assets
+import { generatePDF } from '@/utils/pdfGenerator.js'
 
 export default {
   name: 'AdminUsersTab',
@@ -90,6 +99,14 @@ export default {
   data() {
     return {
       users: usersData
+    }
+  },
+  methods: {
+    async printPDF() {
+      const table = this.$el.querySelector('table')
+      if (table) {
+        await generatePDF(table, 'Users Management')
+      }
     }
   }
 }

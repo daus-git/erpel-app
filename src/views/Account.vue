@@ -81,6 +81,21 @@
               >
             </div>
 
+            <!-- Address -->
+            <div>
+              <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
+                Delivery Address
+              </label>
+              <textarea
+                id="address"
+                rows="3"
+                v-model="formData.address"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-salon-accent1 focus:border-salon-accent1 transition-colors duration-200"
+                placeholder="Enter your delivery address"
+              ></textarea>
+              <p class="mt-1 text-sm text-gray-500">This address will be used for product delivery</p>
+            </div>
+
             <!-- Email -->
             <div>
               <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
@@ -161,6 +176,7 @@ export default {
       formData: {
         name: '',
         phone: '',
+        address: '',
         email: '',
         password: '',
         level: ''
@@ -183,6 +199,7 @@ export default {
         const userData = JSON.parse(user)
         this.formData.name = userData.name || ''
         this.formData.phone = userData.phone || ''
+        this.formData.address = userData.address || ''
         this.formData.email = userData.email || ''
         this.formData.password = ''
         this.formData.level = userData.level || ''
@@ -221,6 +238,7 @@ export default {
         ...user,
         name: this.formData.name,
         phone: this.formData.phone,
+        address: this.formData.address,
         email: this.formData.email,
         profilePhoto: this.profilePhoto
       }

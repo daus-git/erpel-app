@@ -6,6 +6,12 @@
         <h2 class="text-xl font-semibold text-gray-800">Orders Management</h2>
         <p class="text-gray-500 text-sm">Manage and track salon customer orders</p>
       </div>
+      <button
+        @click="printPDF"
+        class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+      >
+        Print PDF
+      </button>
     </div>
 
     <!-- Responsive Table -->
@@ -14,11 +20,11 @@
         <thead class="bg-salon-accent1 text-white">
           <tr>
             <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider">ID</th>
-            <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider hidden sm:table-cell">User</th>
+            <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider">User</th>
             <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider">Service</th>
             <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider">Status</th>
             <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider hidden md:table-cell">Date</th>
-            <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider">Actions</th>
+            <th class="px-3 sm:px-6 py-3 text-left font-semibold uppercase tracking-wider">Order Date & Time</th>
           </tr>
         </thead>
 
@@ -29,12 +35,14 @@
             class="hover:bg-gray-50 transition-colors"
           >
             <td class="px-3 sm:px-6 py-3 text-gray-800 whitespace-nowrap">#{{ order.id }}</td>
-            <td class="px-3 sm:px-6 py-3 text-gray-600 hidden sm:table-cell">
+            <td class="px-3 sm:px-6 py-3 text-gray-600">
               <div class="max-w-[12rem] truncate">{{ order.userName }}</div>
             </td>
             <td class="px-3 sm:px-6 py-3 text-gray-800">
-              <div class="max-w-[14rem] truncate">
-                {{ order.items.map(i => i.name).join(', ') }}
+              <div class="max-w-[14rem]">
+                <div v-for="(item, index) in order.items" :key="index" class="text-xs">
+                  {{ item.name }} ({{ item.quantity || 1 }}x) - Rp {{ formatPrice(item.price) }}
+                </div>
               </div>
             </td>
             <td class="px-3 sm:px-6 py-3">
@@ -47,27 +55,8 @@
             <td class="px-3 sm:px-6 py-3 text-gray-500 hidden md:table-cell whitespace-nowrap">
               {{ formatDate(order.date) }}
             </td>
-            <td class="px-3 sm:px-6 py-3">
-              <div class="flex flex-wrap gap-2">
-                <button
-                  @click="$emit('view-order', order)"
-                  class="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  View
-                </button>
-                <button
-                  @click="$emit('edit-order', order)"
-                  class="text-green-600 hover:text-green-800 font-medium"
-                >
-                  Edit
-                </button>
-                <button
-                  @click="$emit('delete-order', order)"
-                  class="text-red-600 hover:text-red-800 font-medium"
-                >
-                  Delete
-                </button>
-              </div>
+            <td class="px-3 sm:px-6 py-3 text-gray-500 whitespace-nowrap">
+              {{ formatDate(order.date) }} {{ order.time }}
             </td>
           </tr>
         </tbody>
@@ -82,6 +71,8 @@
 </template>
 
 <script>
+import { generatePDF } from '@/utils/pdfGenerator.js'
+
 export default {
   name: 'AdminOrdersTab',
   props: {
@@ -90,7 +81,7 @@ export default {
       default: () => []
     }
   },
-  emits: ['view-order', 'edit-order', 'delete-order'],
+  emits: [],
   methods: {
     statusBadgeClass(status) {
       const colors = {
@@ -109,6 +100,15 @@ export default {
         month: 'short',
         year: 'numeric'
       })
+    },
+    formatPrice(value) {
+      return value.toLocaleString('id-ID')
+    },
+    async printPDF() {
+      const table = this.$el.querySelector('table')
+      if (table) {
+        await generatePDF(table, 'Orders Management')
+      }
     }
   }
 }

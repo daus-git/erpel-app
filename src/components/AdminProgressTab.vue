@@ -1,6 +1,14 @@
 <template>
   <div class="p-4 bg-white rounded-lg shadow-md">
-    <h2 class="text-xl font-semibold mb-4 text-gray-800">Service Progress</h2>
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-gray-800">Service Progress</h2>
+      <button
+        @click="printPDF"
+        class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm transition-all"
+      >
+        Print PDF
+      </button>
+    </div>
     
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
@@ -47,6 +55,7 @@
 
 <script>
 import progressData from '@/data/progress.json'
+import { generatePDF } from '@/utils/pdfGenerator.js'
 
 export default {
   name: 'AdminProgressTab',
@@ -65,6 +74,12 @@ export default {
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ status: item.status })
       // })
+    },
+    async printPDF() {
+      const table = this.$el.querySelector('table')
+      if (table) {
+        await generatePDF(table, 'Service Progress')
+      }
     },
   },
 }

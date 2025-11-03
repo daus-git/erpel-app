@@ -5,12 +5,16 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "deploy": "gh-pages -d dist --repo https://github.com/daus-git/salon-app.git"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.15",
     "autoprefixer": "^10.4.21",
     "core-js": "^3.8.3",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
+    "jspdf-autotable": "^5.0.2",
     "vue": "^3.2.13",
     "vue-router": "^4.6.3"
   },
@@ -22,6 +26,7 @@
     "@vue/cli-service": "~5.0.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.4.0"
   },

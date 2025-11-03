@@ -1,0 +1,421 @@
+[
+  {
+    "id": "ORD-001",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-01-15",
+    "time": "10:00",
+    "status": "Completed",
+    "total": 100000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Hair Cut & Styling", "price": 75000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Alice", "date": "2023-01-15", "time": "10:00" },
+      { "type": "product", "name": "Shampoo Premium", "price": 25000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2023-01-15", "time": "10:00" }
+    ]
+  },
+  {
+    "id": "ORD-002",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-02-20",
+    "time": "14:00",
+    "status": "In Progress",
+    "total": 250000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Hair Coloring", "price": 250000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Bob", "date": "2023-02-20", "time": "14:00" }
+    ]
+  },
+  {
+    "id": "ORD-003",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-03-10",
+    "time": "16:00",
+    "status": "Scheduled",
+    "total": 30000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": "pickup",
+    "pickupDate": "2023-03-12",
+    "pickupTime": "14:00",
+    "deliveryAddress": null,
+    "items": [
+      { "type": "product", "name": "Hair Conditioner", "price": 30000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2023-03-10", "time": "16:00" }
+    ]
+  },
+  {
+    "id": "ORD-004",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-04-05",
+    "time": "09:00",
+    "status": "Completed",
+    "total": 200000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Body Massage", "price": 200000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Diana", "date": "2023-04-05", "time": "09:00" }
+    ]
+  },
+  {
+    "id": "ORD-005",
+    "userId": "admin@example.com",
+    "userName": "Admin User",
+    "date": "2023-05-12",
+    "time": "11:00",
+    "status": "Completed",
+    "total": 150000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Facial Treatment", "price": 150000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Charlie", "date": "2023-05-12", "time": "11:00" }
+    ]
+  },
+  {
+    "id": "ORD-006",
+    "userId": "test@example.com",
+    "userName": "Test User",
+    "date": "2023-06-08",
+    "time": "13:00",
+    "status": "Completed",
+    "total": 135000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Manicure & Pedicure", "price": 100000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Eva", "date": "2023-06-08", "time": "13:00" },
+      { "type": "product", "name": "Nail Polish Set", "price": 35000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2023-06-08", "time": "13:00" }
+    ]
+  },
+  {
+    "id": "ORD-007",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-07-22",
+    "time": "15:30",
+    "status": "Completed",
+    "total": 95000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Hair Cut & Styling", "price": 75000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Alice", "date": "2023-07-22", "time": "15:30" },
+      { "type": "product", "name": "Hair Styling Gel", "price": 20000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2023-07-22", "time": "15:30" }
+    ]
+  },
+  {
+    "id": "ORD-008",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-08-14",
+    "time": "10:45",
+    "status": "Completed",
+    "total": 45000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": "delivery",
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": "Jl. Sudirman No. 123, Jakarta Pusat",
+    "items": [
+      { "type": "product", "name": "Face Cream", "price": 45000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2023-08-14", "time": "10:45" }
+    ]
+  },
+  {
+    "id": "ORD-009",
+    "userId": "admin@example.com",
+    "userName": "Admin User",
+    "date": "2023-09-03",
+    "time": "14:20",
+    "status": "Completed",
+    "total": 200000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Body Massage", "price": 200000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Diana", "date": "2023-09-03", "time": "14:20" }
+    ]
+  },
+  {
+    "id": "ORD-010",
+    "userId": "test@example.com",
+    "userName": "Test User",
+    "date": "2023-10-18",
+    "time": "16:00",
+    "status": "Completed",
+    "total": 190000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Facial Treatment", "price": 150000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Charlie", "date": "2023-10-18", "time": "16:00" },
+      { "type": "product", "name": "Body Lotion", "price": 40000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2023-10-18", "time": "16:00" }
+    ]
+  },
+  {
+    "id": "ORD-011",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-11-25",
+    "time": "11:30",
+    "status": "Completed",
+    "total": 75000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Hair Cut & Styling", "price": 75000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Bob", "date": "2023-11-25", "time": "11:30" }
+    ]
+  },
+  {
+    "id": "ORD-012",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2023-12-10",
+    "time": "13:15",
+    "status": "Completed",
+    "total": 20000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": "pickup",
+    "pickupDate": "2023-12-12",
+    "pickupTime": "10:00",
+    "deliveryAddress": null,
+    "items": [
+      { "type": "product", "name": "Hair Styling Gel", "price": 20000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2023-12-10", "time": "13:15" }
+    ]
+  },
+  {
+    "id": "ORD-013",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2024-01-08",
+    "time": "09:45",
+    "status": "Completed",
+    "total": 75000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Hair Cut & Styling", "price": 75000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Alice", "date": "2024-01-08", "time": "09:45" }
+    ]
+  },
+  {
+    "id": "ORD-014",
+    "userId": "admin@example.com",
+    "userName": "Admin User",
+    "date": "2024-02-14",
+    "time": "15:00",
+    "status": "Completed",
+    "total": 150000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Facial Treatment", "price": 150000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Eva", "date": "2024-02-14", "time": "15:00" }
+    ]
+  },
+  {
+    "id": "ORD-015",
+    "userId": "test@example.com",
+    "userName": "Test User",
+    "date": "2024-03-20",
+    "time": "12:30",
+    "status": "Completed",
+    "total": 100000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Manicure & Pedicure", "price": 100000, "quantity": 1, "deposit": null, "remaining": null, "staff": "Diana", "date": "2024-03-20", "time": "12:30" }
+    ]
+  },
+  {
+    "id": "ORD-016",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2024-04-15",
+    "time": "10:30",
+    "status": "Pending Payment",
+    "total": 75000,
+    "deposit": 30000,
+    "remainingPayment": 45000,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Hair Cut & Styling", "price": 75000, "quantity": 1, "deposit": 30000, "remaining": 45000, "staff": "Alice", "date": "2024-04-15", "time": "10:30" }
+    ]
+  },
+  {
+    "id": "ORD-017",
+    "userId": "admin@example.com",
+    "userName": "Admin User",
+    "date": "2024-04-20",
+    "time": "14:00",
+    "status": "Pending Payment",
+    "total": 250000,
+    "deposit": 100000,
+    "remainingPayment": 150000,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Hair Coloring", "price": 250000, "quantity": 1, "deposit": 100000, "remaining": 150000, "staff": "Alice", "date": "2024-04-20", "time": "14:00" }
+    ]
+  },
+  {
+    "id": "ORD-018",
+    "userId": "test@example.com",
+    "userName": "Test User",
+    "date": "2024-04-25",
+    "time": "09:30",
+    "status": "Pending Payment",
+    "total": 150000,
+    "deposit": 60000,
+    "remainingPayment": 90000,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Facial Treatment", "price": 150000, "quantity": 1, "deposit": 60000, "remaining": 90000, "staff": "Eva", "date": "2024-04-25", "time": "09:30" }
+    ]
+  },
+  {
+    "id": "ORD-019",
+    "userId": "admin@example.com",
+    "userName": "Admin User",
+    "date": "2024-05-01",
+    "time": "16:00",
+    "status": "Pending Payment",
+    "total": 135000,
+    "deposit": 40000,
+    "remainingPayment": 95000,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Manicure & Pedicure", "price": 100000, "quantity": 1, "deposit": 40000, "remaining": 60000, "staff": "Charlie", "date": "2024-05-01", "time": "16:00" },
+      { "type": "product", "name": "Nail Polish Set", "price": 35000, "quantity": 1, "deposit": 0, "remaining": 35000, "staff": null, "date": "2024-05-01", "time": "16:00" }
+    ]
+  },
+  {
+    "id": "ORD-020",
+    "userId": "admin@example.com",
+    "userName": "Admin User",
+    "date": "2024-05-05",
+    "time": "11:00",
+    "status": "Pending Payment",
+    "total": 50000,
+    "deposit": 20000,
+    "remainingPayment": 30000,
+    "deliveryOption": null,
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": null,
+    "items": [
+      { "type": "service", "name": "Eyebrow Shaping", "price": 50000, "quantity": 1, "deposit": 20000, "remaining": 30000, "staff": "Bob", "date": "2024-05-05", "time": "11:00" }
+    ]
+  },
+  {
+    "id": "ORD-021",
+    "userId": "user@example.com",
+    "userName": "Regular User",
+    "date": "2024-05-10",
+    "time": "15:00",
+    "status": "Completed",
+    "total": 65000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": "delivery",
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": "Jl. Thamrin No. 45, Jakarta Selatan",
+    "items": [
+      { "type": "product", "name": "Face Mask Set", "price": 65000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2024-05-10", "time": "15:00" }
+    ]
+  },
+  {
+    "id": "ORD-022",
+    "userId": "test@example.com",
+    "userName": "Test User",
+    "date": "2024-05-15",
+    "time": "11:30",
+    "status": "Completed",
+    "total": 85000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": "pickup",
+    "pickupDate": "2024-05-17",
+    "pickupTime": "13:00",
+    "deliveryAddress": null,
+    "items": [
+      { "type": "product", "name": "Hair Treatment Kit", "price": 85000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2024-05-15", "time": "11:30" }
+    ]
+  },
+  {
+    "id": "ORD-023",
+    "userId": "admin@example.com",
+    "userName": "Admin User",
+    "date": "2024-05-20",
+    "time": "09:00",
+    "status": "Completed",
+    "total": 120000,
+    "deposit": null,
+    "remainingPayment": null,
+    "deliveryOption": "delivery",
+    "pickupDate": null,
+    "pickupTime": null,
+    "deliveryAddress": "Jl. Gatot Subroto No. 78, Jakarta Pusat",
+    "items": [
+      { "type": "product", "name": "Body Scrub", "price": 120000, "quantity": 1, "deposit": null, "remaining": null, "staff": null, "date": "2024-05-20", "time": "09:00" }
+    ]
+  }
+]

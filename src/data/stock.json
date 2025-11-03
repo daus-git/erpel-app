@@ -1,0 +1,88 @@
+[
+  {
+    "id": 1,
+    "productId": 3,
+    "productName": "Face Cream",
+    "category": "Skincare",
+    "currentStock": 45,
+    "minStock": 10,
+    "maxStock": 100,
+    "unit": "pcs",
+    "lastUpdated": "2024-01-15"
+  },
+  {
+    "id": 2,
+    "productId": 5,
+    "productName": "Body Lotion",
+    "category": "Skincare",
+    "currentStock": 8,
+    "minStock": 15,
+    "maxStock": 80,
+    "unit": "pcs",
+    "lastUpdated": "2024-01-15"
+  },
+  {
+    "id": 3,
+    "productId": 1,
+    "productName": "Shampoo Premium",
+    "category": "Hair Care",
+    "currentStock": 25,
+    "minStock": 20,
+    "maxStock": 120,
+    "unit": "bottles",
+    "lastUpdated": "2024-01-14"
+  },
+  {
+    "id": 4,
+    "productId": 2,
+    "productName": "Hair Conditioner",
+    "category": "Hair Care",
+    "currentStock": 30,
+    "minStock": 15,
+    "maxStock": 90,
+    "unit": "bottles",
+    "lastUpdated": "2024-01-14"
+  },
+  {
+    "id": 5,
+    "productId": 4,
+    "productName": "Nail Polish Set",
+    "category": "Nail Care",
+    "currentStock": 12,
+    "minStock": 8,
+    "maxStock": 50,
+    "unit": "sets",
+    "lastUpdated": "2024-01-13"
+  },
+  {
+    "id": 6,
+    "productId": 6,
+    "productName": "Hair Styling Gel",
+    "category": "Hair Care",
+    "currentStock": 5,
+    "minStock": 10,
+    "maxStock": 60,
+    "unit": "tubes",
+    "lastUpdated": "2024-01-13"
+  },
+  {
+    "id": 7,
+    "productName": "Manicure Set",
+    "category": "Tools",
+    "currentStock": 18,
+    "minStock": 5,
+    "maxStock": 40,
+    "unit": "sets",
+    "lastUpdated": "2024-01-12"
+  },
+  {
+    "id": 8,
+    "productName": "Facial Treatment Mask",
+    "category": "Skincare",
+    "currentStock": 22,
+    "minStock": 12,
+    "maxStock": 70,
+    "unit": "pcs",
+    "lastUpdated": "2024-01-12"
+  }
+]

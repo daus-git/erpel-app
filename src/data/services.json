@@ -3,7 +3,8 @@
     "id": 1,
     "name": "Hair Cut & Styling",
     "description": "Professional haircut and styling services",
-    "price": 50000,
+    "price": 75000,
+    "deposit": 30000,
     "duration": "45 minutes",
     "category": "Hair",
     "image": "/haircut&styling.jpg"
@@ -12,7 +13,8 @@
     "id": 2,
     "name": "Facial Treatment",
     "description": "Complete facial care and treatment",
-    "price": 75000,
+    "price": 150000,
+    "deposit": 60000,
     "duration": "60 minutes",
     "category": "Facial",
     "image": "/facialtreatment.jpg"
@@ -21,7 +23,8 @@
     "id": 3,
     "name": "Manicure & Pedicure",
     "description": "Nail care and treatment",
-    "price": 40000,
+    "price": 100000,
+    "deposit": 40000,
     "duration": "30 minutes",
     "category": "Nails",
     "image": "/manicurepedicure.jpg"
@@ -30,7 +33,8 @@
     "id": 4,
     "name": "Body Massage",
     "description": "Relaxing full body massage",
-    "price": 100000,
+    "price": 200000,
+    "deposit": 80000,
     "duration": "90 minutes",
     "category": "Massage",
     "image": "/bodymassage.jpg"
@@ -39,7 +43,8 @@
     "id": 5,
     "name": "Hair Coloring",
     "description": "Professional hair coloring services",
-    "price": 150000,
+    "price": 250000,
+    "deposit": 100000,
     "duration": "120 minutes",
     "category": "Hair",
     "image": "/haircoloring.jpg"
@@ -48,7 +53,8 @@
     "id": 6,
     "name": "Eyebrow Shaping",
     "description": "Eyebrow threading and shaping",
-    "price": 25000,
+    "price": 50000,
+    "deposit": 20000,
     "duration": "15 minutes",
     "category": "Eyebrow",
     "image": "/eyebrowshaping.jpg"

@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import historyData from '../data/history.json'
+import historyData from '../data/order.json'
 import DashboardHeader from '../components/DashboardHeader.vue'
 
 export default {

@@ -5,12 +5,20 @@
         <h2 class="text-xl font-semibold text-gray-800">Services</h2>
         <p class="text-gray-500 text-sm">Manage salon service list</p>
       </div>
-      <button
-        @click="openAddModal"
-        class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm transition-all"
-      >
-        + Add Service
-      </button>
+      <div class="flex gap-2">
+        <button
+          @click="printPDF"
+          class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm transition-all"
+        >
+          Print PDF
+        </button>
+        <button
+          @click="openAddModal"
+          class="bg-salon-accent1 hover:bg-salon-accent2 text-white px-4 py-2 rounded-md text-sm transition-all"
+        >
+          + Add Service
+        </button>
+      </div>
     </div>
 
     <!-- Table Section -->
@@ -142,6 +150,7 @@
 
 <script>
 import servicesData from '@/data/services.json'
+import { generatePDF } from '@/utils/pdfGenerator.js'
 
 export default {
   name: 'AdminServicesTab',
@@ -201,6 +210,26 @@ export default {
         this.services.push({ ...this.form })
       }
       this.closeModal()
+    },
+    async printPDF() {
+      const table = this.$el.querySelector('table')
+      if (table) {
+        // Clone table and remove image column for PDF
+        const clonedTable = table.cloneNode(true)
+        const headers = clonedTable.querySelectorAll('th')
+        const rows = clonedTable.querySelectorAll('tr')
+
+        // Remove first column (Image) from header
+        if (headers[0]) headers[0].remove()
+
+        // Remove first column (Image) from each row
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td, th')
+          if (cells[0]) cells[0].remove()
+        })
+
+        await generatePDF(clonedTable, 'Services Management')
+      }
     },
   },
 }

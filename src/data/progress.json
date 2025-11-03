@@ -46,5 +46,47 @@
     "status": "Scheduled",
     "serviceType": "Eyebrow Shaping",
     "staff": "Tom Anderson"
+  },
+  {
+    "id": 7,
+    "customerName": "Eva Martinez",
+    "time": "16:30",
+    "status": "In Progress",
+    "serviceType": "Hair Cut & Styling",
+    "staff": "Sarah Johnson",
+    "deliveryOption": "pickup",
+    "pickupDate": "2024-05-25",
+    "pickupTime": "17:00"
+  },
+  {
+    "id": 8,
+    "customerName": "Frank Garcia",
+    "time": "17:15",
+    "status": "Waiting",
+    "serviceType": "Facial Treatment",
+    "staff": "Mike Chen",
+    "deliveryOption": "delivery",
+    "deliveryAddress": "Jl. Malioboro No. 12, Yogyakarta"
+  },
+  {
+    "id": 9,
+    "customerName": "Grace Lee",
+    "time": "18:00",
+    "status": "Completed",
+    "serviceType": "Manicure & Pedicure",
+    "staff": "Lisa Park",
+    "deliveryOption": "pickup",
+    "pickupDate": "2024-05-26",
+    "pickupTime": "10:00"
+  },
+  {
+    "id": 10,
+    "customerName": "Henry Taylor",
+    "time": "19:30",
+    "status": "Scheduled",
+    "serviceType": "Body Massage",
+    "staff": "David Kim",
+    "deliveryOption": "delivery",
+    "deliveryAddress": "Jl. Braga No. 45, Bandung"
   }
 ]
