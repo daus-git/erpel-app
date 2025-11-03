@@ -194,6 +194,7 @@ import progressData from '../data/progress.json'
 import templates from '../data/templates.json'
 import whatsappService from '../services/whatsappService.js'
 import emailService from '../services/emailService.js'
+import { showError, showWarning, showSuccess } from '../utils/sweetAlert'
 import AdminDashboardHeader from '../components/AdminDashboardHeader.vue'
 import AdminStatsCards from '../components/AdminStatsCards.vue'
 import AdminTabs from '../components/AdminTabs.vue'
@@ -287,7 +288,7 @@ export default {
         this.$refs.video.srcObject = this.stream
       } catch (error) {
         console.error('Error accessing camera:', error)
-        alert('Unable to access camera. Please check permissions.')
+        showError('Akses Kamera Gagal', 'Tidak dapat mengakses kamera. Silakan periksa izin.')
       }
     },
     closeCamera() {
@@ -298,7 +299,7 @@ export default {
     },
     captureQR() {
       // In a real app, you would use a QR code scanning library here
-      alert('QR Code scanning functionality would be implemented with a library like jsQR')
+      showWarning('Fitur QR Code', 'Fitur pemindaian QR Code akan diimplementasikan dengan library seperti jsQR')
       this.closeCamera()
     },
     getStatusColor(status) {
@@ -317,7 +318,7 @@ export default {
     editUser(user) {
       // Implement edit user functionality
       console.log('Editing user:', user)
-      alert('Edit user functionality to be implemented')
+      showWarning('Fitur Edit User', 'Fitur edit user akan diimplementasikan')
     },
     deleteUser(userId) {
       if (confirm('Are you sure you want to delete this user?')) {
@@ -341,7 +342,7 @@ export default {
     editService(service) {
       // Implement edit service functionality
       console.log('Editing service:', service)
-      alert('Edit service functionality to be implemented')
+      showWarning('Fitur Edit Layanan', 'Fitur edit layanan akan diimplementasikan')
     },
     deleteService(serviceId) {
       if (confirm('Are you sure you want to delete this service?')) {
@@ -352,7 +353,7 @@ export default {
     editProduct(product) {
       // Implement edit product functionality
       console.log('Editing product:', product)
-      alert('Edit product functionality to be implemented')
+      showWarning('Fitur Edit Produk', 'Fitur edit produk akan diimplementasikan')
     },
     deleteProduct(productId) {
       if (confirm('Are you sure you want to delete this product?')) {
@@ -375,7 +376,7 @@ export default {
     },
     addService() {
       // Implement add service functionality
-      alert('Add service functionality to be implemented')
+      showWarning('Fitur Tambah Layanan', 'Fitur tambah layanan akan diimplementasikan')
     },
     addProduct() {
       this.showAddProductModal = true
@@ -401,14 +402,14 @@ export default {
     },
     saveUser() {
       if (!this.newUser.name || !this.newUser.phone || !this.newUser.email || !this.newUser.password || !this.newUser.level) {
-        alert('Please fill in all fields')
+        showWarning('Data Tidak Lengkap', 'Silakan isi semua field')
         return
       }
 
       // Check if email already exists
       const existingUser = this.users.find(u => u.email === this.newUser.email)
       if (existingUser) {
-        alert('Email already exists')
+        showWarning('Email Sudah Ada', 'Email sudah ada')
         return
       }
 
@@ -424,11 +425,11 @@ export default {
 
       this.users.push(user)
       this.closeAddUserModal()
-      alert('User added successfully!')
+      showSuccess('User Berhasil Ditambahkan!', 'User berhasil ditambahkan!')
     },
     saveProduct() {
       if (!this.newProduct.name || !this.newProduct.description || !this.newProduct.price) {
-        alert('Please fill in all required fields')
+        showWarning('Data Tidak Lengkap', 'Silakan isi semua field yang diperlukan')
         return
       }
 
@@ -443,13 +444,13 @@ export default {
 
       this.products.push(product)
       this.closeAddProductModal()
-      alert('Product added successfully!')
+      showSuccess('Produk Berhasil Ditambahkan!', 'Produk berhasil ditambahkan!')
     },
     handleProductImageUpload(event) {
       const file = event.target.files[0]
       if (file) {
         if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          alert('File size must be less than 5MB')
+          showWarning('Ukuran File Terlalu Besar', 'Ukuran file harus kurang dari 5MB')
           return
         }
 
@@ -464,18 +465,18 @@ export default {
       // Find customer details
       const customer = this.users.find(u => u.id === order.userId)
       if (!customer) {
-        alert('Customer not found')
+        showError('Pelanggan Tidak Ditemukan', 'Pelanggan tidak ditemukan')
         return
       }
 
       // Send WhatsApp message
       whatsappService.sendStatusUpdate(customer.phone, order.id, order.status)
         .then(() => {
-          alert('Notification sent successfully!')
+          showSuccess('Notifikasi Berhasil Dikirim!', 'Notifikasi berhasil dikirim!')
         })
         .catch(error => {
           console.error('Error sending notification:', error)
-          alert('Failed to send notification')
+          showError('Gagal Mengirim Notifikasi', 'Gagal mengirim notifikasi')
         })
 
       // Optionally send email as well

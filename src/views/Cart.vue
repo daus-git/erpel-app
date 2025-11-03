@@ -249,6 +249,8 @@
 </template>
 
 <script>
+import { showSuccess } from '@/utils/sweetAlert'
+
 export default {
   name: 'CartView',
   data() {
@@ -417,9 +419,9 @@ export default {
       const methodText = paymentMethod === 'store' ? 'di toko' : 'melalui gateway pembayaran'
       if (this.hasServices) {
         const depositText = `Deposit: Rp ${totalDeposit.toLocaleString()}, Sisa bayar di toko: Rp ${totalRemaining.toLocaleString()}`
-        alert(`Pesanan berhasil dibuat! ${depositText}. Silakan bayar ${methodText}.`)
+        showSuccess(`Pesanan Berhasil Dibuat!`, `Pesanan berhasil dibuat! ${depositText}. Silakan bayar ${methodText}.`)
       } else {
-        alert(`Pesanan berhasil dibuat! Silakan bayar ${methodText}.`)
+        showSuccess(`Pesanan Berhasil Dibuat!`, `Pesanan berhasil dibuat! Silakan bayar ${methodText}.`)
       }
 
       // Redirect to dashboard

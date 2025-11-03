@@ -36,6 +36,8 @@
 </template>
 
 <script>
+import { showWarning } from '@/utils/sweetAlert'
+
 export default {
   name: 'DashboardHeader',
 
@@ -75,7 +77,7 @@ export default {
   methods: {
     handleCheckIn() {
       if (!this.hasIncompleteOrders) {
-        alert('Maaf, Anda belum memiliki pesanan yang belum selesai. Silakan buat pesanan terlebih dahulu.')
+        showWarning('Pesanan Belum Ada', 'Maaf, Anda belum memiliki pesanan yang belum selesai. Silakan buat pesanan terlebih dahulu.')
         return
       }
 

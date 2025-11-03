@@ -98,6 +98,8 @@
 </template>
 
 <script>
+import { showWarning, showError } from '@/utils/sweetAlert'
+
 export default {
   name: 'ServiceBookingModal',
   props: {
@@ -144,19 +146,19 @@ export default {
     },
     confirmBooking() {
       if (!this.bookingData.date || !this.bookingData.time) {
-        alert('Please fill in all required fields')
+        showWarning('Data Tidak Lengkap', 'Silakan isi semua field yang diperlukan')
         return
       }
 
       if (!this.selectedService) {
-        alert('Service information is missing. Please try again.')
+        showError('Informasi Layanan Hilang', 'Informasi layanan tidak ditemukan. Silakan coba lagi.')
         return
       }
 
       // Validate staff selection based on quantity
       if (this.bookingData.quantity === 1) {
         if (!this.bookingData.staff) {
-          alert('Please select a staff member')
+          showWarning('Pilih Staff', 'Silakan pilih anggota staff')
           return
         }
         // If random staff selected, pick one randomly
@@ -167,7 +169,7 @@ export default {
         // For multiple quantity, check all staff selections
         const missingStaff = this.bookingData.selectedStaff.some(staff => !staff)
         if (missingStaff || this.bookingData.selectedStaff.length !== this.bookingData.quantity) {
-          alert('Please select all staff members')
+          showWarning('Pilih Semua Staff', 'Silakan pilih semua anggota staff')
           return
         }
 

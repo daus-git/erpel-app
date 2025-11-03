@@ -146,6 +146,8 @@
 </template>
 
 <script>
+import { showSuccess, showError } from '@/utils/sweetAlert'
+
 export default {
   name: 'PaymentGateway',
   data() {
@@ -193,7 +195,7 @@ export default {
 
         if (isSuccess) {
           // Payment successful
-          alert(`Pembayaran berhasil! Deposit Rp ${this.depositAmount.toLocaleString()} telah dibayar. Sisa pembayaran Rp ${this.remainingAmount.toLocaleString()} akan dibayar di toko.`)
+          showSuccess(`Pembayaran Berhasil!`, `Deposit Rp ${this.depositAmount.toLocaleString()} telah dibayar. Sisa pembayaran Rp ${this.remainingAmount.toLocaleString()} akan dibayar di toko.`)
 
           // Clear cart and redirect
           localStorage.removeItem('salon-cart')
@@ -201,10 +203,10 @@ export default {
           this.$router.push('/dashboard')
         } else {
           // Payment failed
-          alert('Pembayaran gagal. Silakan coba lagi atau gunakan kartu lain.')
+          showError('Pembayaran Gagal', 'Pembayaran gagal. Silakan coba lagi atau gunakan kartu lain.')
         }
       } catch (error) {
-        alert('Terjadi kesalahan. Silakan coba lagi.')
+        showError('Terjadi Kesalahan', 'Terjadi kesalahan. Silakan coba lagi.')
       } finally {
         this.isProcessing = false
       }

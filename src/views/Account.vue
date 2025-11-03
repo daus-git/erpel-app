@@ -165,6 +165,7 @@
 <script>
 import { useRouter } from 'vue-router'
 import DashboardHeader from '../components/DashboardHeader.vue'
+import { showWarning, showSuccess } from '../utils/sweetAlert'
 
 export default {
   name: 'AccountView',
@@ -216,7 +217,7 @@ export default {
       const file = event.target.files[0]
       if (file) {
         if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          alert('File size must be less than 5MB')
+          showWarning('Ukuran File Terlalu Besar', 'Ukuran file harus kurang dari 5MB')
           return
         }
 
@@ -229,7 +230,7 @@ export default {
     },
     saveProfile() {
       if (!this.formData.name || !this.formData.phone || !this.formData.email) {
-        alert('Please fill in all required fields')
+        showWarning('Data Tidak Lengkap', 'Silakan isi semua field yang diperlukan')
         return
       }
 
@@ -252,7 +253,7 @@ export default {
       // Update users.json if needed (in a real app, this would be an API call)
       // For demo purposes, we'll just update localStorage
 
-      alert('Profile updated successfully!')
+      showSuccess('Profil Berhasil Diperbarui!', 'Profil berhasil diperbarui!')
       this.router.push('/dashboard')
     }
   }

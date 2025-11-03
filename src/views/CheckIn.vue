@@ -31,6 +31,8 @@
 </template>
 
 <script>
+import { showWarning } from '@/utils/sweetAlert'
+
 export default {
   name: 'CheckIn',
   computed: {
@@ -57,7 +59,7 @@ export default {
     }
 
     if (!this.incompleteOrderId) {
-      alert('Maaf, Anda belum memiliki pesanan yang belum selesai. Silakan buat pesanan terlebih dahulu.')
+      showWarning('Pesanan Belum Ada', 'Maaf, Anda belum memiliki pesanan yang belum selesai. Silakan buat pesanan terlebih dahulu.')
       this.$router.push('/dashboard')
     }
   }

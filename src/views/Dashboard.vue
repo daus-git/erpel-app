@@ -103,6 +103,7 @@ import ServiceBookingModal from '../components/ServiceBookingModal.vue'
 import DashboardHeader from '../components/DashboardHeader.vue'
 import ServiceCard from '../components/ServiceCard.vue'
 import ProductCard from '../components/ProductCard.vue'
+import { showInfo, showSuccess, showError } from '../utils/sweetAlert'
 
 export default {
   name: 'DashboardView',
@@ -204,7 +205,7 @@ export default {
     },
     viewProductDetails(product) {
       // Placeholder for product details functionality
-      alert(`Detail produk: ${product.name}\nDeskripsi: ${product.description}\nHarga: Rp ${product.price.toLocaleString()}`)
+      showInfo(`Detail Produk: ${product.name}`, `Deskripsi: ${product.description}\nHarga: Rp ${product.price.toLocaleString()}`)
     },
     openBookingModal(service) {
       if (!service) {
@@ -268,7 +269,7 @@ export default {
 
       if (!service) {
         console.error('Service data is missing', bookingData)
-        alert('Error: Service data is missing. Please try again.')
+        showError('Error: Service data is missing. Please try again.')
         return
       }
 
@@ -303,7 +304,7 @@ export default {
       }
 
       localStorage.setItem('salon-cart', JSON.stringify(this.cartItems))
-      alert('Service added to cart!')
+      showSuccess('Layanan Ditambahkan!', 'Layanan berhasil ditambahkan ke keranjang!')
     }
   }
 }

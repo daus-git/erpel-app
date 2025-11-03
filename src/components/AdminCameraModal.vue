@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import { showError } from '@/utils/sweetAlert'
+
 export default {
   name: 'AdminCameraModal',
   props: {
@@ -42,7 +44,7 @@ export default {
         this.$refs.video.srcObject = stream
       } catch (error) {
         console.error('Error accessing camera:', error)
-        alert('Unable to access camera. Please check permissions.')
+        showError('Akses Kamera Gagal', 'Tidak dapat mengakses kamera. Silakan periksa izin.')
       }
     },
     stopCamera() {

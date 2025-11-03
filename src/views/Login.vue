@@ -106,6 +106,7 @@
 <script>
 import { useRouter } from 'vue-router'
 import users from '../data/users.json'
+import { showWarning, showError } from '../utils/sweetAlert'
 
 export default {
   name: 'LoginView',
@@ -123,7 +124,7 @@ export default {
   methods: {
     async login() {
       if (!this.email || !this.password) {
-        alert('Please enter email and password')
+        showWarning('Data Tidak Lengkap', 'Silakan masukkan email dan password')
         return
       }
 
@@ -147,7 +148,7 @@ export default {
           this.router.push('/dashboard')
         }
       } else {
-        alert('Invalid email or password')
+        showError('Login Gagal', 'Email atau password salah')
       }
     }
   }

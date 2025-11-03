@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { showError } from './sweetAlert'
 
 export async function generatePDF(tableElement, title, logoUrl = '/icons/logo.png', includeStats = false, statsData = null) {
   try {
@@ -101,6 +102,6 @@ export async function generatePDF(tableElement, title, logoUrl = '/icons/logo.pn
     pdf.save(`${title.replace(/\s+/g, '_')}.pdf`)
   } catch (error) {
     console.error('Error generating PDF:', error)
-    alert('Failed to generate PDF. Please try again.')
+    showError('Gagal Generate PDF', 'Gagal membuat PDF. Silakan coba lagi.')
   }
 }

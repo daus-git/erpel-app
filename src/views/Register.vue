@@ -141,6 +141,7 @@
 <script>
 import { useRouter } from 'vue-router'
 import users from '../data/users.json'
+import { showWarning, showSuccess } from '@/utils/sweetAlert'
 
 export default {
   name: 'RegisterView',
@@ -160,14 +161,14 @@ export default {
   methods: {
     async register() {
       if (!this.name || !this.phone || !this.email || !this.password) {
-        alert('Please fill in all fields')
+        showWarning('Data Tidak Lengkap', 'Silakan isi semua field')
         return
       }
 
       // Check if email already exists
       const existingUser = users.find(u => u.email === this.email)
       if (existingUser) {
-        alert('Email already registered')
+        showWarning('Email Sudah Terdaftar', 'Email sudah terdaftar')
         return
       }
 
@@ -190,7 +191,7 @@ export default {
 
       this.isLoading = false
 
-      alert('Account created successfully! Please login.')
+      showSuccess('Akun Berhasil Dibuat', 'Akun berhasil dibuat! Silakan login.')
       this.router.push('/login')
     }
   }

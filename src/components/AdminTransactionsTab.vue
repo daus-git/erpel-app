@@ -101,6 +101,7 @@
 <script>
 import transactionsData from '@/data/transactions.json'
 import { generatePDF } from '@/utils/pdfGenerator.js'
+import { showError, showConfirm } from '@/utils/sweetAlert'
 
 export default {
   name: 'AdminTransactionsTab',
@@ -152,7 +153,7 @@ export default {
         }
         generatePDF(tableElement, `Transactions Report - ${this.selectedPeriod.charAt(0).toUpperCase() + this.selectedPeriod.slice(1)}`, '/icons/logo.png', true, statsData)
       } else {
-        alert('Table not found. Please try again.')
+        showError('Tabel Tidak Ditemukan', 'Tabel tidak ditemukan. Silakan coba lagi.')
       }
     },
     filterTransactions() {
@@ -185,8 +186,9 @@ export default {
 
       this.filteredTransactions = filtered
     },
-    deleteTransaction(transactionId) {
-      if (confirm('Are you sure you want to delete this transaction?')) {
+    async deleteTransaction(transactionId) {
+      const result = await showConfirm('Hapus Transaksi', 'Apakah Anda yakin ingin menghapus transaksi ini?')
+      if (result.isConfirmed) {
         this.transactions = this.transactions.filter(transaction => transaction.id !== transactionId)
         this.filterTransactions() // Re-apply filter after deletion
         // In a real app, you would save to backend

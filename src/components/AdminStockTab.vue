@@ -100,6 +100,7 @@
 <script>
 import productsData from '@/data/products.json'
 import { generatePDF } from '@/utils/pdfGenerator.js'
+import { showError, showWarning, showConfirm } from '@/utils/sweetAlert'
 
 export default {
   name: 'AdminStockTab',
@@ -140,11 +141,12 @@ export default {
       if (tableElement) {
         generatePDF(tableElement, 'Stock Report')
       } else {
-        alert('Table not found. Please try again.')
+        showError('Tabel Tidak Ditemukan', 'Tabel tidak ditemukan. Silakan coba lagi.')
       }
     },
-    deleteStock(stockId) {
-      if (confirm('Are you sure you want to delete this stock item?')) {
+    async deleteStock(stockId) {
+      const result = await showConfirm('Hapus Item Stok', 'Apakah Anda yakin ingin menghapus item stok ini?')
+      if (result.isConfirmed) {
         this.stock = this.stock.filter(item => item.id !== stockId)
         // In a real app, you would save to backend
       }
@@ -152,7 +154,7 @@ export default {
     editStock(item) {
       // Implement edit stock functionality
       console.log('Editing stock item:', item)
-      alert('Edit stock functionality to be implemented')
+      showWarning('Fitur Belum Tersedia', 'Fitur edit stok akan segera diimplementasikan')
     }
   }
 }
