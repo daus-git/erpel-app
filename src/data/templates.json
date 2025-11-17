@@ -45,14 +45,14 @@
     "id": 7,
     "type": "whatsapp",
     "name": "Promotional Offer",
-    "subject": null,
-    "template": "✨ Promo Spesial Salon Kami! ✨\n\n{promoTitle}\n\n{promoDescription}\n\n📅 Berlaku hingga: {validUntil}\n\nJangan lewatkan kesempatan ini! Booking sekarang lewat link berikut:\n{bookingLink}"
+    "subject": "Promo Spesial SalonApp: {promoTitle}",
+    "template": "Promo Spesial Salon Kami! \n\n{promoTitle}\n\n{promoDescription}\n\n Berlaku hingga: {validUntil}\n\nJangan lewatkan kesempatan ini! Booking sekarang lewat link berikut:\n{bookingLink}"
   },
   {
     "id": 8,
     "type": "email",
     "name": "Promotional Offer",
-    "subject": "🎉 Promo Spesial SalonApp: {promoTitle}",
-    "template": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fff8f3; border-radius: 10px; padding: 30px;\"><h2 style=\"color: #B08C6A;\">✨ {promoTitle} ✨</h2><p style=\"font-size: 16px; color: #444;\">{promoDescription}</p><div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;\"><p><strong>Berlaku hingga:</strong> {validUntil}</p></div><a href=\"{bookingLink}\" style=\"display: inline-block; background-color: #B08C6A; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 5px; font-weight: bold;\">Pesan Sekarang</a><p style=\"margin-top: 20px; font-size: 12px; color: #666;\">SalonApp Team</p></div>"
+    "subject": "Promo Spesial SalonApp: {promoTitle}",
+    "template": "{promoTitle} \n\n{promoDescription}\n\n Berlaku hingga: {validUntil}\n\nJangan lewatkan kesempatan ini! Booking sekarang lewat link berikut:\n{bookingLink}"
   }
 ]

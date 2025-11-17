@@ -72,7 +72,7 @@
     <!-- Modal Add/Edit -->
     <div
       v-if="showAddModal"
-      class="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
       <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
         <h3 class="text-lg font-semibold mb-4">{{ editMode ? 'Edit Service' : 'Add New Service' }}</h3>
@@ -151,12 +151,13 @@
 <script>
 import servicesData from '@/data/services.json'
 import { generatePDF } from '@/utils/pdfGenerator.js'
+import { servicesStorage } from '@/utils/localStorage.js'
 
 export default {
   name: 'AdminServicesTab',
   data() {
     return {
-      services: [...servicesData],
+      services: servicesStorage.get().length > 0 ? [...servicesStorage.get()] : [...servicesData],
       showAddModal: false,
       editMode: false,
       form: {
@@ -200,6 +201,7 @@ export default {
     },
     deleteService(id) {
       this.services = this.services.filter((s) => s.id !== id)
+      servicesStorage.set(this.services)
     },
     saveService() {
       if (this.editMode) {
@@ -209,27 +211,37 @@ export default {
         this.form.id = Date.now()
         this.services.push({ ...this.form })
       }
+      servicesStorage.set(this.services)
       this.closeModal()
     },
     async printPDF() {
-      const table = this.$el.querySelector('table')
-      if (table) {
-        // Clone table and remove image column for PDF
-        const clonedTable = table.cloneNode(true)
-        const headers = clonedTable.querySelectorAll('th')
-        const rows = clonedTable.querySelectorAll('tr')
-
-        // Remove first column (Image) from header
-        if (headers[0]) headers[0].remove()
-
-        // Remove first column (Image) from each row
-        rows.forEach(row => {
-          const cells = row.querySelectorAll('td, th')
-          if (cells[0]) cells[0].remove()
-        })
-
-        await generatePDF(clonedTable, 'Services Management')
-      }
+      // Create a custom table for PDF with all necessary columns
+      const tempTable = document.createElement('table')
+      tempTable.style.width = '100%'
+      tempTable.style.borderCollapse = 'collapse'
+      tempTable.innerHTML = `
+        <thead style="background-color: #f3f4f6;">
+          <tr>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Name</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Category</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Duration</th>
+            <th style="border: 1px solid #d1d5db; padding: 8px; text-align: left;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${this.services.map(service => `
+            <tr>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${service.name}</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${service.category}</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">${service.duration}</td>
+              <td style="border: 1px solid #d1d5db; padding: 8px;">Rp ${service.price.toLocaleString('id-ID')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `
+      document.body.appendChild(tempTable)
+      await generatePDF(tempTable, 'Services Management')
+      document.body.removeChild(tempTable)
     },
   },
 }

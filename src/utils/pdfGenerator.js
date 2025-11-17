@@ -39,11 +39,16 @@ export async function generatePDF(tableElement, title, logoUrl = '/icons/logo.pn
       console.warn('Logo not found, continuing without logo')
     }
 
-    // App name and title
+    // Company info
     pdf.setFontSize(18)
-    pdf.text('Salon App', 50, 20)
+    pdf.text('Erpel Salon', 50, 15)
+    pdf.setFontSize(10)
+    pdf.text('Jl. Ahmad Yani No. 123, Banjarmasin', 50, 22)
+    pdf.text('Telp: (0511) 1234567 | Email: info@erpelsalon.com', 50, 27)
+
+    // App name and title
     pdf.setFontSize(14)
-    pdf.text(title, 50, 30)
+    pdf.text(title, 50, 35)
 
     // Date
     const date = new Date().toLocaleDateString()
@@ -68,6 +73,7 @@ export async function generatePDF(tableElement, title, logoUrl = '/icons/logo.pn
     }
 
     // Add table using autoTable
+    let finalY
     autoTable(pdf, {
       head: [headers],
       body: data,
@@ -95,8 +101,19 @@ export async function generatePDF(tableElement, title, logoUrl = '/icons/logo.pn
         4: { cellWidth: 'auto' }
       },
       margin: { top: startY, left: 10, right: 10 },
-      tableWidth: 'auto'
+      tableWidth: 'auto',
+      didDrawPage: function (data) {
+        finalY = data.cursor.y
+      }
     })
+
+    // Add signature section below the table
+    const signatureY = finalY + 20
+
+    pdf.setFontSize(10)
+    pdf.text('Mengetahui,', 140, signatureY)
+    pdf.text('Banjarmasin, ' + new Date().toLocaleDateString('id-ID'), 140, signatureY + 5)
+    pdf.text('Manager Erpel Salon', 140, signatureY + 25)
 
     // Save PDF
     pdf.save(`${title.replace(/\s+/g, '_')}.pdf`)

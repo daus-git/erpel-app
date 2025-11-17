@@ -1,4 +1,4 @@
-<template>
+;<template>
   <div class="min-h-screen bg-gray-50">
     <AdminDashboardHeader @open-camera="openCamera" @logout="logout" />
 
@@ -186,15 +186,23 @@
 </template>
 
 <script>
-import users from '../data/users.json'
-import orders from '../data/order.json'
-import services from '../data/services.json'
-import products from '../data/products.json'
-import progressData from '../data/progress.json'
-import templates from '../data/templates.json'
+import usersData from '../data/users.json'
+import ordersData from '../data/order.json'
+import servicesData from '../data/services.json'
+import productsData from '../data/products.json'
+import progressDataFile from '../data/progress.json'
+import templatesData from '../data/templates.json'
 import whatsappService from '../services/whatsappService.js'
 import emailService from '../services/emailService.js'
 import { showError, showWarning, showSuccess } from '../utils/sweetAlert'
+import {
+  usersStorage,
+  productsStorage,
+  servicesStorage,
+  ordersStorage,
+  progressStorage,
+  templatesStorage
+} from '../utils/localStorage'
 import AdminDashboardHeader from '../components/AdminDashboardHeader.vue'
 import AdminStatsCards from '../components/AdminStatsCards.vue'
 import AdminTabs from '../components/AdminTabs.vue'
@@ -246,12 +254,12 @@ export default {
         price: '',
         image: ''
       },
-      users: users,
-      orders: orders,
-      services: services,
-      products: products,
-      progressData: progressData,
-      templates: templates,
+      users: usersStorage.get().length > 0 ? usersStorage.get() : usersData,
+      orders: ordersStorage.get().length > 0 ? ordersStorage.get() : ordersData,
+      services: servicesStorage.get().length > 0 ? servicesStorage.get() : servicesData,
+      products: productsStorage.get().length > 0 ? productsStorage.get() : productsData,
+      progressData: progressStorage.get().length > 0 ? progressStorage.get() : progressDataFile,
+      templates: templatesStorage.get().length > 0 ? templatesStorage.get() : templatesData,
       tabs: [
         { key: 'users', label: 'Users' },
         { key: 'orders', label: 'Orders' },
@@ -262,8 +270,7 @@ export default {
         { key: 'templates', label: 'Templates' },
         { key: 'transactions', label: 'Transactions' },
         { key: 'stock', label: 'Stock' }
-      ],
-      stream: null
+      ]
     }
   },
   mounted() {
@@ -280,22 +287,9 @@ export default {
     },
     openCamera() {
       this.showCamera = true
-      this.startCamera()
-    },
-    async startCamera() {
-      try {
-        this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        this.$refs.video.srcObject = this.stream
-      } catch (error) {
-        console.error('Error accessing camera:', error)
-        showError('Akses Kamera Gagal', 'Tidak dapat mengakses kamera. Silakan periksa izin.')
-      }
     },
     closeCamera() {
       this.showCamera = false
-      if (this.stream) {
-        this.stream.getTracks().forEach(track => track.stop())
-      }
     },
     captureQR() {
       // In a real app, you would use a QR code scanning library here
@@ -315,28 +309,30 @@ export default {
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString()
     },
-    editUser(user) {
-      // Implement edit user functionality
-      console.log('Editing user:', user)
-      showWarning('Fitur Edit User', 'Fitur edit user akan diimplementasikan')
+    editUser() {
+      // This method is called from AdminUsersTab, but we don't need to do anything here
+      // The AdminUsersTab handles the editing internally
     },
     deleteUser(userId) {
       if (confirm('Are you sure you want to delete this user?')) {
         this.users = this.users.filter(user => user.id !== userId)
-        // In a real app, you would save to backend
+        usersStorage.set(this.users)
+        showSuccess('User berhasil dihapus!', 'User telah dihapus dari sistem.')
       }
     },
     updateOrderStatus(orderId, status) {
       const order = this.orders.find(o => o.id === orderId)
       if (order) {
         order.status = status
-        // In a real app, you would save to backend
+        ordersStorage.set(this.orders)
+        showSuccess('Status order berhasil diperbarui!', `Status order ${orderId} telah diubah menjadi ${status}.`)
       }
     },
     deleteOrder(orderId) {
       if (confirm('Are you sure you want to delete this order?')) {
         this.orders = this.orders.filter(order => order.id !== orderId)
-        // In a real app, you would save to backend
+        ordersStorage.set(this.orders)
+        showSuccess('Order berhasil dihapus!', 'Order telah dihapus dari sistem.')
       }
     },
     editService(service) {
@@ -347,31 +343,39 @@ export default {
     deleteService(serviceId) {
       if (confirm('Are you sure you want to delete this service?')) {
         this.services = this.services.filter(service => service.id !== serviceId)
-        // In a real app, you would save to backend
+        servicesStorage.set(this.services)
+        showSuccess('Layanan berhasil dihapus!', 'Layanan telah dihapus dari sistem.')
       }
     },
     editProduct(product) {
-      // Implement edit product functionality
-      console.log('Editing product:', product)
-      showWarning('Fitur Edit Produk', 'Fitur edit produk akan diimplementasikan')
+      // Update the product in the array
+      const index = this.products.findIndex(p => p.id === product.id)
+      if (index !== -1) {
+        this.products.splice(index, 1, product)
+        productsStorage.set(this.products)
+        showSuccess('Produk berhasil diperbarui!', 'Produk telah diperbarui.')
+      }
     },
     deleteProduct(productId) {
       if (confirm('Are you sure you want to delete this product?')) {
         this.products = this.products.filter(product => product.id !== productId)
-        // In a real app, you would save to backend
+        productsStorage.set(this.products)
+        showSuccess('Produk berhasil dihapus!', 'Produk telah dihapus dari sistem.')
       }
     },
     updateProgressStatus(progressId, status) {
       const progress = this.progressData.find(p => p.id === progressId)
       if (progress) {
         progress.status = status
-        // In a real app, you would save to backend
+        progressStorage.set(this.progressData)
+        showSuccess('Status progress berhasil diperbarui!', `Status progress telah diubah menjadi ${status}.`)
       }
     },
     deleteProgress(progressId) {
       if (confirm('Are you sure you want to delete this progress entry?')) {
         this.progressData = this.progressData.filter(progress => progress.id !== progressId)
-        // In a real app, you would save to backend
+        progressStorage.set(this.progressData)
+        showSuccess('Progress berhasil dihapus!', 'Progress entry telah dihapus dari sistem.')
       }
     },
     addService() {
@@ -424,8 +428,16 @@ export default {
       }
 
       this.users.push(user)
+      usersStorage.set(this.users)
       this.closeAddUserModal()
       showSuccess('User Berhasil Ditambahkan!', 'User berhasil ditambahkan!')
+
+      // Force re-render of AdminUsersTab by changing activeTab temporarily
+      const currentTab = this.activeTab
+      this.activeTab = ''
+      this.$nextTick(() => {
+        this.activeTab = currentTab
+      })
     },
     saveProduct() {
       if (!this.newProduct.name || !this.newProduct.description || !this.newProduct.price) {
@@ -443,6 +455,7 @@ export default {
       }
 
       this.products.push(product)
+      productsStorage.set(this.products)
       this.closeAddProductModal()
       showSuccess('Produk Berhasil Ditambahkan!', 'Produk berhasil ditambahkan!')
     },
@@ -492,18 +505,21 @@ export default {
     },
     addTemplate(template) {
       this.templates.push(template)
-      // In a real app, you would save to backend
+      templatesStorage.set(this.templates)
+      showSuccess('Template berhasil ditambahkan!', 'Template telah ditambahkan ke sistem.')
     },
     editTemplate(template) {
       const index = this.templates.findIndex(t => t.id === template.id)
       if (index !== -1) {
         this.templates.splice(index, 1, template)
-        // In a real app, you would save to backend
+        templatesStorage.set(this.templates)
+        showSuccess('Template berhasil diperbarui!', 'Template telah diperbarui.')
       }
     },
     deleteTemplate(templateId) {
       this.templates = this.templates.filter(t => t.id !== templateId)
-      // In a real app, you would save to backend
+      templatesStorage.set(this.templates)
+      showSuccess('Template berhasil dihapus!', 'Template telah dihapus dari sistem.')
     }
   }
 }
