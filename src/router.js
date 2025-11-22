@@ -3,11 +3,12 @@ import Login from './views/Login.vue'
 import Register from './views/Register.vue'
 import Dashboard from './views/Dashboard.vue'
 import Cart from './views/Cart.vue'
-import PaymentGateway from './views/PaymentGateway.vue'
 import Account from './views/Account.vue'
 import History from './views/History.vue'
 import CheckIn from './views/CheckIn.vue'
 import AdminDashboard from './views/AdminDashboard.vue'
+import ForgotPassword from './views/ForgotPassword.vue'
+import ResetPassword from './views/ResetPassword.vue'
 
 const routes = [
   {
@@ -25,6 +26,16 @@ const routes = [
     component: Register
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword
+  },
+  {
+    path: '/reset-password/:token',
+    name: 'ResetPassword',
+    component: ResetPassword
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard
@@ -33,11 +44,6 @@ const routes = [
     path: '/cart',
     name: 'Cart',
     component: Cart
-  },
-  {
-    path: '/payment-gateway',
-    name: 'PaymentGateway',
-    component: PaymentGateway
   },
   {
     path: '/account',

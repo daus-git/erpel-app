@@ -40,10 +40,9 @@
                 @change="updateStatus(item)"
                 class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-salon-accent1 focus:border-salon-accent1"
               >
-                <option>Waiting</option>
-                <option>Scheduled</option>
-                <option>In Progress</option>
-                <option>Completed</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="finished">Finished</option>
               </select>
             </td>
           </tr>
@@ -54,26 +53,46 @@
 </template>
 
 <script>
-import progressData from '@/data/progress.json'
 import { generatePDF } from '@/utils/pdfGenerator.js'
+import { updateProgress } from '@/services/apiService'
+import { showSuccess, showError } from '@/utils/sweetAlert'
 
 export default {
   name: 'AdminProgressTab',
+  props: {
+    progressData: {
+      type: Array,
+      default: () => []
+    }
+  },
   data() {
     return {
-      progressList: [...progressData],
+      progressList: []
+    }
+  },
+  watch: {
+    progressData: {
+      handler(newVal) {
+        this.progressList = [...(newVal || [])]
+      },
+      immediate: true
     }
   },
   methods: {
-    updateStatus(item) {
-      console.log(`Status for ${item.customerName} changed to: ${item.status}`)
-      // 🚀 di sini bisa ditambah request ke API untuk update di server
-      // contoh:
-      // fetch(`/api/progress/${item.id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ status: item.status })
-      // })
+    async updateStatus(item) {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        console.warn('No auth token found for updating progress status')
+        return
+      }
+      try {
+        await updateProgress(item.id, { status: item.status }, token)
+        showSuccess('Status diperbarui', `Status progress diubah menjadi ${item.status}`)
+      } catch (error) {
+        console.error('Failed to update progress status', error)
+        const message = error?.body?.message || error.message || 'Gagal mengubah status'
+        showError('Gagal update status', message)
+      }
     },
     async printPDF() {
       const table = this.$el.querySelector('table')

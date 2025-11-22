@@ -35,7 +35,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr v-for="service in services" :key="service.id" class="hover:bg-gray-50 transition duration-150">
+          <tr v-for="service in internalServices" :key="service.id" class="hover:bg-gray-50 transition duration-150">
             <td class="px-4 py-2">
               <img :src="service.image" alt="service image" class="w-12 h-12 rounded-md object-cover" />
             </td>
@@ -149,15 +149,19 @@
 </template>
 
 <script>
-import servicesData from '@/data/services.json'
 import { generatePDF } from '@/utils/pdfGenerator.js'
-import { servicesStorage } from '@/utils/localStorage.js'
 
 export default {
   name: 'AdminServicesTab',
+  props: {
+    services: {
+      type: Array,
+      default: () => []
+    }
+  },
   data() {
     return {
-      services: servicesStorage.get().length > 0 ? [...servicesStorage.get()] : [...servicesData],
+      internalServices: [],
       showAddModal: false,
       editMode: false,
       form: {
@@ -168,6 +172,14 @@ export default {
         price: '',
         image: '',
       },
+    }
+  },
+  watch: {
+    services: {
+      handler(newVal) {
+        this.internalServices = [...(newVal || [])]
+      },
+      immediate: true
     }
   },
   methods: {
@@ -200,18 +212,16 @@ export default {
       this.showAddModal = true
     },
     deleteService(id) {
-      this.services = this.services.filter((s) => s.id !== id)
-      servicesStorage.set(this.services)
+      this.internalServices = this.internalServices.filter((s) => s.id !== id)
     },
     saveService() {
       if (this.editMode) {
-        const index = this.services.findIndex((s) => s.id === this.form.id)
-        if (index !== -1) this.services[index] = { ...this.form }
+        const index = this.internalServices.findIndex((s) => s.id === this.form.id)
+        if (index !== -1) this.internalServices[index] = { ...this.form }
       } else {
         this.form.id = Date.now()
-        this.services.push({ ...this.form })
+        this.internalServices.push({ ...this.form })
       }
-      servicesStorage.set(this.services)
       this.closeModal()
     },
     async printPDF() {
@@ -229,7 +239,7 @@ export default {
           </tr>
         </thead>
         <tbody>
-          ${this.services.map(service => `
+          ${this.internalServices.map(service => `
             <tr>
               <td style="border: 1px solid #d1d5db; padding: 8px;">${service.name}</td>
               <td style="border: 1px solid #d1d5db; padding: 8px;">${service.category}</td>

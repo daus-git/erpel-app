@@ -140,8 +140,8 @@
 
 <script>
 import { useRouter } from 'vue-router'
-import users from '../data/users.json'
-import { showWarning, showSuccess } from '@/utils/sweetAlert'
+import { showWarning, showSuccess, showError } from '@/utils/sweetAlert'
+import { createUser } from '../services/apiService'
 
 export default {
   name: 'RegisterView',
@@ -165,34 +165,23 @@ export default {
         return
       }
 
-      // Check if email already exists
-      const existingUser = users.find(u => u.email === this.email)
-      if (existingUser) {
-        showWarning('Email Sudah Terdaftar', 'Email sudah terdaftar')
-        return
-      }
-
       this.isLoading = true
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      try {
+        await createUser({
+          name: this.name,
+          email: this.email,
+          password: this.password
+        })
 
-      // Create new user
-      const newUser = {
-        id: users.length + 1,
-        name: this.name,
-        phone: this.phone,
-        email: this.email,
-        password: this.password
+        this.isLoading = false
+        showSuccess('Akun Berhasil Dibuat', 'Akun berhasil dibuat! Silakan login.')
+        this.router.push('/login')
+      } catch (error) {
+        this.isLoading = false
+        const message = error?.body?.message || error.message || 'Gagal membuat akun'
+        showError('Registrasi Gagal', message)
       }
-
-      // In a real app, this would be an API call
-      users.push(newUser)
-
-      this.isLoading = false
-
-      showSuccess('Akun Berhasil Dibuat', 'Akun berhasil dibuat! Silakan login.')
-      this.router.push('/login')
     }
   }
 }

@@ -4,5 +4,13 @@ const isNetlify = process.env.NETLIFY === 'true'
 module.exports = defineConfig({
   transpileDependencies: true,
   // if building on Netlify serve from root; otherwise use repo subpath in production
-  publicPath: isNetlify ? '/' : (isProd ? '/salon-app/' : '/')
+  publicPath: isNetlify ? '/' : (isProd ? '/salon-app/' : '/'),
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'https://salon-api-production.up.railway.app',
+        changeOrigin: true
+      }
+    }
+  }
 })

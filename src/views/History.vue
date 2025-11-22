@@ -87,8 +87,8 @@
 </template>
 
 <script>
-import historyData from '../data/order.json'
 import DashboardHeader from '../components/DashboardHeader.vue'
+import { fetchOrders, fetchServices } from '../services/apiService'
 
 export default {
   name: 'HistoryView',
@@ -97,7 +97,9 @@ export default {
   },
   data() {
     return {
-      history: historyData
+      orders: [],
+      services: [],
+      loading: false
     }
   },
   computed: {
@@ -108,25 +110,84 @@ export default {
     userHistory() {
       if (!this.currentUser) return []
 
-      // Combine static history data with dynamic order history from localStorage
-      const staticHistory = this.history.filter(order => order.userId === this.currentUser.email)
-      const dynamicHistory = JSON.parse(localStorage.getItem('order-history') || '[]')
-        .filter(order => order.userId === this.currentUser.email)
-        .map(order => ({
-          ...order,
-          items: order.items.map(item => ({
-            ...item,
-            price: item.price || 0,
-            quantity: item.quantity || 1
-          }))
-        }))
+      const servicesMap = new Map((this.services || []).map(s => [s.id, s]))
 
-      // Combine and sort by date (newest first)
-      return [...staticHistory, ...dynamicHistory]
-        .sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time))
+      const normalizedOrders = (this.orders || []).map(order => {
+        const service = servicesMap.get(order.service_id)
+        const items = service ? [{
+          name: service.name,
+          type: 'service',
+          price: Number(service.price) || 0,
+          quantity: 1,
+          staff: order.employee_id ? `Staff #${order.employee_id}` : null
+        }] : []
+
+        const total = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0)
+        const date = order.order_date || order.date || (order.created_at ? order.created_at.split('T')[0] : '-')
+        const time = order.order_time || order.time || this.extractTime(order.created_at)
+
+        return {
+          id: order.id,
+          date,
+          time,
+          status: order.status || 'Pending',
+          total,
+          items
+        }
+      })
+
+      return normalizedOrders.sort((a, b) => new Date(`${b.date} ${b.time || '00:00'}`) - new Date(`${a.date} ${a.time || '00:00'}`))
     }
   },
+  mounted() {
+    this.loadHistory()
+  },
   methods: {
+    async loadHistory() {
+      if (!this.currentUser) return
+      this.loading = true
+      try {
+        const [ordersRaw, services] = await Promise.all([
+          fetchOrders(),
+          fetchServices()
+        ])
+
+        this.services = services || []
+
+        const userId = this.currentUser?.id
+        const userEmail = this.currentUser?.email
+
+        this.orders = (ordersRaw || []).filter(order => {
+          if (userId && order.user_id !== undefined) return order.user_id === userId
+          if (userEmail && order.customer_email) return order.customer_email === userEmail
+          return false
+        })
+      } catch (error) {
+        console.error('Failed to load order history', error)
+      } finally {
+        this.loading = false
+      }
+    },
+    extractTime(raw) {
+      if (!raw || raw === '-') return '-'
+      if (typeof raw === 'string') {
+        const isoMatch = raw.match(/T(\d{2}:\d{2})(?::\d{2})?/)
+        if (isoMatch) return isoMatch[1]
+        if (raw.includes(' ')) return raw.split(' ')[1].slice(0, 5)
+        if (/^\d{2}:\d{2}/.test(raw)) return raw.slice(0, 5)
+      }
+      try {
+        const d = new Date(raw)
+        if (!isNaN(d)) {
+          const hh = `${d.getHours()}`.padStart(2, '0')
+          const mm = `${d.getMinutes()}`.padStart(2, '0')
+          return `${hh}:${mm}`
+        }
+      } catch (e) {
+        // ignore parsing errors
+      }
+      return raw
+    },
     getStatusClass(status) {
       switch (status) {
         case 'Completed':
@@ -144,4 +205,3 @@ export default {
   }
 }
 </script>
-

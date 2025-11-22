@@ -31,15 +31,14 @@
               <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
               <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
               <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider hidden sm:table-cell">Email</th>
-              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider hidden md:table-cell">Phone</th>
-              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Level</th>
+              <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Phone</th>
               <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
 
           <tbody class="bg-white divide-y divide-gray-200">
             <tr
-              v-for="user in users"
+              v-for="user in internalUsers"
               :key="user.id"
               class="hover:bg-gray-50 transition-colors duration-150"
             >
@@ -52,11 +51,8 @@
               <td class="px-3 sm:px-6 py-4 text-sm text-gray-500 hidden sm:table-cell truncate max-w-[16rem]">
                 {{ user.email }}
               </td>
-              <td class="px-3 sm:px-6 py-4 text-sm text-gray-500 hidden md:table-cell truncate max-w-[12rem]">
-                {{ user.phone }}
-              </td>
-              <td class="px-3 sm:px-6 py-4 text-sm text-gray-500 capitalize">
-                {{ user.level }}
+              <td class="px-3 sm:px-6 py-4 text-sm text-gray-500 truncate max-w-[12rem]">
+                {{ user.phone || '-' }}
               </td>
               <td class="px-3 sm:px-6 py-4 text-sm">
                 <div class="flex flex-wrap gap-2">
@@ -77,8 +73,8 @@
             </tr>
 
             <!-- Empty State -->
-            <tr v-if="users.length === 0">
-              <td colspan="6" class="text-center py-6 text-gray-500">
+            <tr v-if="internalUsers.length === 0">
+              <td colspan="5" class="text-center py-6 text-gray-500">
                 No users found.
               </td>
             </tr>
@@ -177,16 +173,20 @@
 </template>
 
 <script>
-import usersData from '@/data/users.json' // pastikan file users.json ada di folder assets
 import { generatePDF } from '@/utils/pdfGenerator.js'
-import { usersStorage } from '@/utils/localStorage.js'
 
 export default {
   name: 'AdminUsersTab',
+  props: {
+    users: {
+      type: Array,
+      default: () => []
+    }
+  },
   emits: ['add-user', 'edit-user', 'delete-user'],
   data() {
     return {
-      users: usersStorage.get().length > 0 ? usersStorage.get() : usersData,
+      internalUsers: [],
       showEditModal: false,
       editUser: {
         id: null,
@@ -196,6 +196,14 @@ export default {
         password: '',
         level: ''
       }
+    }
+  },
+  watch: {
+    users: {
+      handler(newVal) {
+        this.internalUsers = [...(newVal || [])]
+      },
+      immediate: true
     }
   },
   methods: {
@@ -227,26 +235,23 @@ export default {
       }
 
       // Check if email already exists (excluding current user)
-      const existingUser = this.users.find(u => u.email === this.editUser.email && u.id !== this.editUser.id)
+      const existingUser = this.internalUsers.find(u => u.email === this.editUser.email && u.id !== this.editUser.id)
       if (existingUser) {
         alert('Email already exists')
         return
       }
 
       // Update user
-      const index = this.users.findIndex(u => u.id === this.editUser.id)
+      const index = this.internalUsers.findIndex(u => u.id === this.editUser.id)
       if (index !== -1) {
-        this.users[index] = { ...this.editUser }
-        usersStorage.set(this.users)
+        this.internalUsers[index] = { ...this.editUser }
         this.closeEditModal()
         alert('User updated successfully!')
       }
     },
     deleteUser(userId) {
       if (confirm('Are you sure you want to delete this user?')) {
-        this.users = this.users.filter(user => user.id !== userId)
-        usersStorage.set(this.users)
-        alert('User deleted successfully!')
+        this.$emit('delete-user', userId)
       }
     }
   }

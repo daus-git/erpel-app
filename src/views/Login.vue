@@ -70,9 +70,9 @@
           </div>
 
           <div class="text-sm">
-            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+            <router-link to="/forgot-password" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
               Forgot password?
-            </a>
+            </router-link>
           </div>
         </div>
 
@@ -105,8 +105,8 @@
 
 <script>
 import { useRouter } from 'vue-router'
-import users from '../data/users.json'
-import { showWarning, showError } from '../utils/sweetAlert'
+import { showWarning, showError, showSuccess } from '../utils/sweetAlert'
+import { login as apiLogin } from '../services/apiService'
 
 export default {
   name: 'LoginView',
@@ -130,25 +130,34 @@ export default {
 
       this.isLoading = true
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      try {
+        const result = await apiLogin({ email: this.email, password: this.password })
+        const token = result.token || result?.data?.token
 
-      // Check if user exists in dummy data
-      const user = users.find(u => u.email === this.email && u.password === this.password)
+        // Simpan token dan user info minimal ke localStorage
+        if (token) localStorage.setItem('authToken', token)
+        const userPayload = result?.user || result?.data?.user || {}
+        localStorage.setItem('currentUser', JSON.stringify({
+          id: userPayload.id || userPayload.user_id || null,
+          email: this.email,
+          name: userPayload.name || this.email.split('@')[0],
+          level: userPayload.role || userPayload.level || 'user'
+        }))
 
-      this.isLoading = false
+        showSuccess('Login Berhasil', 'Anda berhasil masuk.')
 
-      if (user) {
-        // Store user info in localStorage (in a real app, use proper auth)
-        localStorage.setItem('currentUser', JSON.stringify(user))
-        // Redirect admin to admin dashboard, regular users to regular dashboard
-        if (user.level === 'admin') {
+        // Redirect admin ke dashboard admin jika role admin tersedia
+        const level = result?.user?.role || 'user'
+        if (level === 'admin') {
           this.router.push('/admin')
         } else {
           this.router.push('/dashboard')
         }
-      } else {
-        showError('Login Gagal', 'Email atau password salah')
+      } catch (error) {
+        const message = error?.body?.message || error.message || 'Email atau password salah'
+        showError('Login Gagal', message)
+      } finally {
+        this.isLoading = false
       }
     }
   }

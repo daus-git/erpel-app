@@ -110,6 +110,10 @@ export default {
     selectedService: {
       type: Object,
       default: null
+    },
+    employees: {
+      type: Array,
+      default: () => []
     }
   },
   emits: ['close', 'confirm'],
@@ -126,10 +130,6 @@ export default {
         '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
         '12:00', '13:00', '13:30', '14:00', '14:30', '15:00',
         '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
-      ],
-      availableStaff: [
-        'Sarah Johnson', 'Mike Chen', 'Lisa Park', 'David Kim',
-        'Emma Wilson', 'Tom Anderson', 'Anna Lee', 'James Brown'
       ]
     }
   },
@@ -137,6 +137,10 @@ export default {
     minDate() {
       const today = new Date()
       return today.toISOString().split('T')[0]
+    },
+    availableStaff() {
+      const staffNames = (this.employees || []).map(emp => emp.name).filter(Boolean)
+      return staffNames.length ? staffNames : ['Random Staff']
     }
   },
   methods: {
@@ -152,6 +156,11 @@ export default {
 
       if (!this.selectedService) {
         showError('Informasi Layanan Hilang', 'Informasi layanan tidak ditemukan. Silakan coba lagi.')
+        return
+      }
+
+      if (!this.availableStaff.length) {
+        showWarning('Staff tidak tersedia', 'Tidak ada staff yang tersedia saat ini.')
         return
       }
 

@@ -9,6 +9,7 @@
     "deploy": "gh-pages -d dist --repo https://github.com/daus-git/salon-app.git"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@tailwindcss/postcss": "^4.1.15",
     "autoprefixer": "^10.4.21",
     "core-js": "^3.8.3",

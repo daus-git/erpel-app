@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
     <div class="relative">
-      <img :src="service.image" :alt="service.name" class="w-full h-48 object-cover">
+      <img :src="imageUrl" :alt="service.name" class="w-full h-48 object-cover">
       <div class="absolute top-4 right-4">
         <span class="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
           {{ service.duration }}
@@ -13,12 +13,13 @@
       <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ service.description }}</p>
       <div class="flex items-center justify-between mb-4">
         <span class="text-2xl font-bold text-salon-accent1">Rp {{ service.price.toLocaleString() }}</span>
-        <div class="flex items-center space-x-1">
-          <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-          <span class="text-sm text-gray-600">{{ service.rating }}</span>
-        </div>
+      <!-- Rating removed, not in API data -->
+      <!-- <div class="flex items-center space-x-1">
+        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        <span class="text-sm text-gray-600">{{ service.rating }}</span>
+      </div> -->
       </div>
       <div v-if="showQuantityControls" class="flex items-center space-x-2 mb-3">
         <button @click="decreaseQuantity" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors" :disabled="displayQuantity === 0">
@@ -79,6 +80,12 @@ export default {
       return this.cartItems
         .filter(item => typeof item.id === 'string' && item.id.startsWith(`${this.service.id}-`) && item.type === 'service')
         .reduce((total, item) => total + item.quantity, 0)
+    },
+    imageUrl() {
+      const image = this.service.image || ''
+      if (image.startsWith('http')) return image
+      if (image.startsWith('/')) return image // served from /public
+      return `/${image}`
     },
     showQuantityControls() {
       // For services, show quantity controls if already in cart

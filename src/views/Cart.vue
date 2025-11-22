@@ -249,7 +249,10 @@
 </template>
 
 <script>
-import { showSuccess } from '@/utils/sweetAlert'
+import { showSuccess, showError } from '@/utils/sweetAlert'
+import { requestSnapPayment } from '@/api/midtrans'
+import { createOrder, fetchUsers, createProgress } from '@/services/apiService'
+import emailjs from '@emailjs/browser'
 
 export default {
   name: 'CartView',
@@ -293,10 +296,16 @@ export default {
           .reduce((total, item) => total + (item.price * item.quantity), 0)
     }
   },
+  mounted() {
+    this.loadCart()
+  },
   methods: {
     loadCart() {
       const cart = JSON.parse(localStorage.getItem('salon-cart') || '[]')
       this.cartItems = cart
+    },
+    getTodayDate() {
+      return new Date().toLocaleDateString('sv-SE') // YYYY-MM-DD in local timezone
     },
     updateQuantity(index, newQuantity) {
       if (newQuantity <= 0) {
@@ -323,21 +332,49 @@ export default {
         day: 'numeric'
       })
     },
-    selectPaymentMethod(method) {
-      if (method === 'gateway') {
-        // Store payment data for gateway
-        const paymentData = {
-          depositAmount: this.depositAmount,
-          remainingAmount: this.remainingAmount,
-          cartItems: this.cartItems,
-          deliveryOption: this.deliveryOption,
-          pickupDate: this.pickupDate,
-          pickupTime: this.pickupTime
-        }
-        localStorage.setItem('salon-payment-data', JSON.stringify(paymentData))
+    async selectPaymentMethod(method) {
+      if (!this.cartItems.length) {
+        showError('Keranjang kosong', 'Tidak ada item untuk dibayar.')
+        return
+      }
 
-        // Redirect to payment gateway
-        this.$router.push('/payment-gateway')
+      if (method === 'gateway') {
+        try {
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+          const amountToPay = this.hasServices ? this.depositAmount : this.total
+
+          // Buat order dulu, tapi jangan blokir alur Midtrans jika API error
+          try {
+            await this.createOrdersAfterMidtransLink()
+          } catch (orderErr) {
+            console.warn('Order creation failed, continuing to Midtrans', orderErr)
+          }
+
+          const response = await requestSnapPayment({
+            amount: amountToPay,
+            email: currentUser.email || '',
+            description: 'Pembayaran Salon',
+            order_id: `order-${Date.now()}`
+          })
+          console.log('Midtrans snap response:', response)
+          if (response?.redirect_url) {
+            // Open payment page immediately to avoid popup blockers
+            const newTab = window.open(response.redirect_url, '_blank')
+            if (!newTab) {
+              window.location.href = response.redirect_url
+            }
+
+            // Clear cart after initiating payment
+            this.cartItems = []
+            localStorage.removeItem('salon-cart')
+          } else {
+            showError('Pembayaran gagal', 'redirect_url tidak diterima dari server.')
+          }
+        } catch (error) {
+          console.error('Midtrans snap error:', error)
+          const message = error?.body?.message || error.message || 'Gagal memproses pembayaran.'
+          showError('Pembayaran gagal', message)
+        }
       } else if (method === 'store') {
         // Pay at store - mark order as pending payment
         this.completeOrder('store')
@@ -426,10 +463,129 @@ export default {
 
       // Redirect to dashboard
       this.$router.push('/dashboard')
+    },
+    extractServiceId(rawId) {
+      if (!rawId) return null
+      const numericPart = parseInt(String(rawId).split('-')[0], 10)
+      return Number.isNaN(numericPart) ? null : numericPart
+    },
+    async createOrdersAfterMidtransLink() {
+      const serviceItems = this.cartItems.filter(item => item.type === 'service')
+      if (!serviceItems.length) return
+
+      const token = localStorage.getItem('authToken')
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      const fallbackDate = this.getTodayDate()
+      const fallbackTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
+      // Resolve user_id: if missing, try to fetch user list and match by email
+      let resolvedUserId = currentUser.id || null
+      if (!resolvedUserId && currentUser.email && token) {
+        try {
+          const users = await fetchUsers(token)
+          const matched = Array.isArray(users) ? users.find(u => u.email === currentUser.email) : null
+          if (matched?.id) {
+            resolvedUserId = matched.id
+            localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, id: resolvedUserId }))
+          }
+        } catch (err) {
+          console.warn('Failed to resolve user id from API', err)
+        }
+      }
+
+      const payloads = serviceItems
+        .map(item => {
+          const serviceId = item.serviceId || this.extractServiceId(item.id)
+          if (!serviceId) return null
+          return {
+            user_id: resolvedUserId,
+            service_id: serviceId,
+            employee_id: item.employeeId || null,
+            order_date: item.date || fallbackDate,
+            order_time: item.time || fallbackTime,
+            total_price: item.price,
+            status: 'confirmed'
+          }
+        })
+        .filter(Boolean)
+
+      if (!payloads.length) return
+
+      console.log('Order payloads to /orders:', payloads)
+
+      const createdOrders = []
+      for (const payload of payloads) {
+        try {
+          const response = await createOrder(payload, token)
+          createdOrders.push(response?.data || response)
+        } catch (err) {
+          console.error('Create order failed for payload', payload, err)
+        }
+      }
+
+      // Auto-create progress for today's orders with status pending
+      const progressPayloads = createdOrders
+        .filter(order => {
+          const orderDate = (order?.order_date || order?.date || '').toString().substring(0, 10)
+          return orderDate === this.getTodayDate()
+        })
+        .map(order => ({
+          order_id: order.id,
+          status: 'pending'
+        }))
+
+      if (progressPayloads.length && token) {
+        console.log('Progress payloads to /progress:', progressPayloads)
+        await Promise.all(progressPayloads.map(p => createProgress(p, token)))
+      }
+
+      // Send email reminders (non-blocking)
+      this.sendEmailReminders(createdOrders, serviceItems).catch(err => {
+        console.warn('Failed to send email reminders', err)
+      })
+    },
+    async sendEmailReminders(createdOrders, serviceItems) {
+      if (!Array.isArray(createdOrders) || !createdOrders.length) return
+
+      // Vue CLI hanya mengekspose env dengan prefix VUE_APP_
+      const serviceIdEnv = process.env.VUE_APP_EMAILJS_SERVICE_ID || 'service_gmail'
+      const templateIdEnv = process.env.VUE_APP_EMAILJS_TEMPLATE_ID || 'template_2q2o43b'
+      const publicKeyEnv = process.env.VUE_APP_EMAILJS_PUBLIC_KEY || 'Qis4WItcfBprla5gB'
+
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      const toEmail = currentUser.email
+      const toName = currentUser.name || 'Customer'
+      if (!toEmail) {
+        console.warn('No recipient email; skip email reminders')
+        return
+      }
+
+      const serviceLookup = new Map((serviceItems || []).map(item => [item.serviceId || item.id, item]))
+      const firstOrder = createdOrders[0] || {}
+      const firstService = serviceLookup.get(firstOrder.service_id) || serviceItems[0] || {}
+      const date = firstOrder.order_date || firstOrder.date || this.getTodayDate()
+      const time = firstOrder.order_time || firstOrder.time || this.pickupTime || '-'
+      const serviceName = firstService.name || `Service #${firstOrder.service_id || ''}`
+
+      const templateParams = {
+        name: toName,
+        email: toEmail,
+        date,
+        time,
+        service: serviceName
+      }
+
+      console.log('Sending email reminder with params:', templateParams)
+
+      try {
+        await emailjs.send(serviceIdEnv, templateIdEnv, templateParams, {
+          publicKey: publicKeyEnv
+        })
+        console.log('Email reminder sent via EmailJS')
+      } catch (err) {
+        console.error('EmailJS send failed', err)
+      }
     }
-  },
-  mounted() {
-    this.loadCart()
   }
 }
 </script>

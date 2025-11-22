@@ -29,20 +29,6 @@
           </div>
         </div>
 
-        <!-- Products Section -->
-        <div class="mb-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Produk Kami</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <ProductCard
-              v-for="product in products"
-              :key="product.id"
-              :product="product"
-              :cart-items="cartItems"
-              @add-to-cart="setProductQuantity"
-            />
-          </div>
-        </div>
-
         <!-- Customer Progress Table -->
         <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
           <div class="flex items-center mb-6">
@@ -71,7 +57,7 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ progress.time }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span :class="getStatusClass(progress.status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                      {{ progress.status }}
+                      {{ formatStatus(progress.status) }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ progress.serviceType }}</td>
@@ -88,6 +74,7 @@
     <ServiceBookingModal
       :showModal="showBookingModal"
       :selectedService="selectedServiceForBooking"
+      :employees="employees"
       @close="closeBookingModal"
       @confirm="handleBookingConfirm"
     />
@@ -96,28 +83,28 @@
 
 <script>
 import { useRouter } from 'vue-router'
-import servicesData from '../data/services.json'
-import productsData from '../data/products.json'
-import progressData from '../data/progress.json'
 import ServiceBookingModal from '../components/ServiceBookingModal.vue'
 import DashboardHeader from '../components/DashboardHeader.vue'
 import ServiceCard from '../components/ServiceCard.vue'
-import ProductCard from '../components/ProductCard.vue'
-import { showInfo, showSuccess, showError } from '../utils/sweetAlert'
+import { showSuccess, showError } from '../utils/sweetAlert'
+import { fetchServices, fetchProgress, fetchOrders, fetchUsers, fetchEmployees } from '../services/apiService'
 
 export default {
   name: 'DashboardView',
   components: {
     ServiceBookingModal,
     DashboardHeader,
-    ServiceCard,
-    ProductCard
+    ServiceCard
   },
   data() {
     return {
-      services: servicesData,
-      products: productsData,
-      progressData: progressData,
+      services: [],
+      servicesLoading: false,
+      progressData: [],
+      progressLoading: false,
+      users: [],
+      employees: [],
+      orders: [],
       cartItems: [],
       showBookingModal: false,
       selectedServiceForBooking: null
@@ -130,6 +117,7 @@ export default {
   mounted() {
     // Load cart items
     this.loadCart()
+    this.loadDashboardData()
   },
   computed: {
     currentUser() {
@@ -144,19 +132,92 @@ export default {
     }
   },
   methods: {
-    getStatusClass(status) {
-      switch (status) {
-        case 'Completed':
-          return 'bg-green-100 text-green-800'
-        case 'In Progress':
-          return 'bg-blue-100 text-blue-800'
-        case 'Waiting':
-          return 'bg-yellow-100 text-yellow-800'
-        case 'Scheduled':
-          return 'bg-gray-100 text-gray-800'
-        default:
-          return 'bg-gray-100 text-gray-800'
+    async loadDashboardData() {
+      this.servicesLoading = true
+      this.progressLoading = true
+      try {
+        const [services, progressRaw, ordersRaw, users, employees] = await Promise.all([
+          fetchServices(),
+          fetchProgress(),
+          fetchOrders(),
+          fetchUsers(),
+          fetchEmployees()
+        ])
+
+        this.services = services || []
+        this.users = users || []
+        this.employees = employees || []
+        this.orders = ordersRaw || []
+
+        const servicesMap = new Map((services || []).map(s => [s.id, s]))
+        const usersMap = new Map((users || []).map(u => [u.id, u]))
+        const employeesMap = new Map((employees || []).map(e => [e.id, e]))
+        const ordersMap = new Map((ordersRaw || []).map(o => [o.id, o]))
+
+        const todayLocal = this.getTodayDate()
+        this.progressData = (progressRaw || [])
+          .map(item => {
+            const relatedOrder = ordersMap.get(item.order_id)
+            if (!relatedOrder) return null
+            const orderDate = (relatedOrder.order_date || relatedOrder.date || '').toString().substring(0, 10)
+            if (orderDate !== todayLocal) return null
+            const service = servicesMap.get(relatedOrder?.service_id)
+            const userFromOrder = relatedOrder?.user_id ? usersMap.get(relatedOrder.user_id) : null
+            const employeeName = relatedOrder?.employee_id ? (employeesMap.get(relatedOrder.employee_id)?.name || `Staff #${relatedOrder.employee_id}`) : '-'
+            const rawTime = item.updated_at || item.created_at || relatedOrder?.time || '-'
+            const progressTime = this.extractTime(rawTime)
+            const rawStatus = item.status || 'pending'
+            const normalizedStatus = typeof rawStatus === 'string' ? rawStatus.replace(/\s+/g, '_').toLowerCase() : 'pending'
+            return {
+              id: item.id,
+              time: progressTime,
+              customerName: relatedOrder?.customer_name || userFromOrder?.name || 'Customer',
+              serviceType: service?.name || 'Service',
+              staff: employeeName,
+              status: normalizedStatus
+            }
+          })
+          .filter(Boolean)
+      } catch (error) {
+        console.error('Failed to load dashboard data from API', error)
+        showError('Gagal memuat data', 'Silakan coba lagi nanti.')
+      } finally {
+        this.servicesLoading = false
+        this.progressLoading = false
       }
+    },
+    extractTime(raw) {
+      if (!raw || raw === '-') return '-'
+      // Handle ISO strings or "YYYY-MM-DD HH:MM:SS"
+      if (typeof raw === 'string') {
+        const isoMatch = raw.match(/T(\d{2}:\d{2})(?::\d{2})?/)
+        if (isoMatch) return isoMatch[1]
+        if (raw.includes(' ')) return raw.split(' ')[1].slice(0, 5)
+        if (/^\d{2}:\d{2}/.test(raw)) return raw.slice(0, 5)
+      }
+      try {
+        const d = new Date(raw)
+        if (!isNaN(d)) {
+          const hh = `${d.getHours()}`.padStart(2, '0')
+          const mm = `${d.getMinutes()}`.padStart(2, '0')
+          return `${hh}:${mm}`
+        }
+      } catch (e) {
+        // ignore parsing errors
+      }
+      return raw
+    },
+    getStatusClass(status) {
+      const normalized = (status || '').toLowerCase()
+      const classes = {
+        completed: 'bg-green-100 text-green-800',
+        finished: 'bg-green-100 text-green-800',
+        in_progress: 'bg-blue-100 text-blue-800',
+        waiting: 'bg-yellow-100 text-yellow-800',
+        pending: 'bg-yellow-100 text-yellow-800',
+        scheduled: 'bg-gray-100 text-gray-800'
+      }
+      return classes[normalized] || 'bg-gray-100 text-gray-800'
     },
     loadCart() {
       const cart = JSON.parse(localStorage.getItem('salon-cart') || '[]')
@@ -166,46 +227,9 @@ export default {
       const item = this.cartItems.find(cartItem => cartItem.id === itemId && cartItem.type === type)
       return item ? item.quantity : 0
     },
-    addToCart(item, type) {
-      if (type === 'service') {
-        // For services, open booking modal
-        this.openBookingModal(item)
-      } else {
-        // For products, add directly to cart
-        this.addProductToCart(item)
-      }
-    },
-    setProductQuantity(item, quantity) {
-      if (quantity <= 0) {
-        // Remove item from cart
-        const itemIndex = this.cartItems.findIndex(cartItem => cartItem.id === item.id && cartItem.type === 'product')
-        if (itemIndex !== -1) {
-          this.cartItems.splice(itemIndex, 1)
-        }
-      } else {
-        // Check if item already exists in cart
-        const existingItem = this.cartItems.find(cartItem => cartItem.id === item.id && cartItem.type === 'product')
-        if (existingItem) {
-          existingItem.quantity = quantity
-        } else {
-          const cartItem = {
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-            type: 'product',
-            quantity: quantity
-          }
-          this.cartItems.push(cartItem)
-        }
-      }
-
-      // Save to localStorage
-      localStorage.setItem('salon-cart', JSON.stringify(this.cartItems))
-    },
-    viewProductDetails(product) {
-      // Placeholder for product details functionality
-      showInfo(`Detail Produk: ${product.name}`, `Deskripsi: ${product.description}\nHarga: Rp ${product.price.toLocaleString()}`)
+    addToCart(item) {
+      // For services, open booking modal
+      this.openBookingModal(item)
     },
     openBookingModal(service) {
       if (!service) {
@@ -276,6 +300,7 @@ export default {
       if (quantity === 1) {
         const cartItem = {
           id: `${service.id}-${Date.now()}`,
+          serviceId: service.id,
           name: service.name,
           price: service.price,
           image: service.image,
@@ -283,13 +308,15 @@ export default {
           quantity: 1,
           date,
           time,
-          staff
+          staff,
+          employeeId: this.getEmployeeIdByName(staff)
         }
         this.cartItems.push(cartItem)
       } else {
         for (let i = 0; i < quantity; i++) {
           const cartItem = {
             id: `${service.id}-${Date.now()}-${i}`,
+            serviceId: service.id,
             name: service.name,
             price: service.price,
             image: service.image,
@@ -297,7 +324,8 @@ export default {
             quantity: 1,
             date,
             time,
-            staff: selectedStaff[i]
+            staff: selectedStaff[i],
+            employeeId: this.getEmployeeIdByName(selectedStaff[i])
           }
           this.cartItems.push(cartItem)
         }
@@ -305,6 +333,21 @@ export default {
 
       localStorage.setItem('salon-cart', JSON.stringify(this.cartItems))
       showSuccess('Layanan Ditambahkan!', 'Layanan berhasil ditambahkan ke keranjang!')
+    },
+    getEmployeeIdByName(name) {
+      if (!name || !this.employees || !this.employees.length) return null
+      const found = this.employees.find(emp => emp.name === name)
+      return found ? found.id : null
+    },
+    formatStatus(status) {
+      if (!status) return '-'
+      return status
+        .toString()
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+    },
+    getTodayDate() {
+      return new Date().toLocaleDateString('sv-SE')
     }
   }
 }
