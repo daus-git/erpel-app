@@ -87,7 +87,7 @@ export default {
       
       // Convert absolute backend URLs to Vue proxy paths (/storage/* → backend:8000)
       if (url) {
-        url = url.replace(/^https?:\/[^/]+/, '')
+        url = url.replace(/^https?:\/\/[^/]+/, '')
         console.log(`ServiceCard ${this.service.name} image:`, url)
       }
       
