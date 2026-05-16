@@ -82,25 +82,12 @@ export default {
         .reduce((total, item) => total + item.quantity, 0)
     },
     imageUrl() {
-      // Handle backend image_url (absolute → proxy path) or legacy image
       let url = this.service.image_url || this.service.image || ''
-      
-      // Convert absolute backend URLs to Vue proxy paths (/storage/* → backend:8000)
+
       if (url) {
         url = url.replace(/^https?:\/\/[^/]+/, '')
-        console.log(`ServiceCard ${this.service.name} image:`, url)
       }
-      
-      // Legacy image handling (if relative path)
-      if (!url.startsWith('http') && url) {
-        if (url.startsWith('/storage') || url.startsWith('/images')) {
-          url = `/storage${url.startsWith('/storage') ? '' : '/images/' + url}`
-        } else {
-          url = `/storage/${url}`
-        }
-      }
-      
-      // Smart defaults based on service name if no image
+
       if (!url) {
         const name = this.service.name?.toLowerCase() || ''
         if (name.includes('hair') || name.includes('cut')) url = '/images/haircut&styling.jpg'
@@ -109,9 +96,8 @@ export default {
         else if (name.includes('color')) url = '/images/haircoloring.jpg'
         else if (name.includes('nail')) url = '/images/manicurepedicure.jpg'
         else url = '/images/facialtreatment.jpg'
-        console.log(`ServiceCard ${this.service.name} default:`, url)
       }
-      
+
       return url
     },
     showQuantityControls() {
