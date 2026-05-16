@@ -84,18 +84,15 @@ export default {
     imageUrl() {
       let url = this.service.image_url || this.service.image || ''
 
-      if (url) {
-        url = url.replace(/^https?:\/\/[^/]+/, '')
-      }
-
       if (!url) {
         const name = this.service.name?.toLowerCase() || ''
-        if (name.includes('hair') || name.includes('cut')) url = '/images/haircut&styling.jpg'
-        else if (name.includes('facial')) url = '/images/facialtreatment.jpg'
-        else if (name.includes('massage')) url = '/images/bodymassage.jpg'
-        else if (name.includes('color')) url = '/images/haircoloring.jpg'
-        else if (name.includes('nail')) url = '/images/manicurepedicure.jpg'
-        else url = '/images/facialtreatment.jpg'
+        const base = process.env.VUE_APP_API_BASE?.replace(/\/api$/, '') || ''
+        if (name.includes('hair') || name.includes('cut')) url = `${base}/images/haircut&styling.jpg`
+        else if (name.includes('facial')) url = `${base}/images/facialtreatment.jpg`
+        else if (name.includes('massage')) url = `${base}/images/bodymassage.jpg`
+        else if (name.includes('color')) url = `${base}/images/haircoloring.jpg`
+        else if (name.includes('nail')) url = `${base}/images/manicurepedicure.jpg`
+        else url = `${base}/images/facialtreatment.jpg`
       }
 
       return url
