@@ -6,7 +6,8 @@ import Cart from './views/Cart.vue'
 import Account from './views/Account.vue'
 import History from './views/History.vue'
 import CheckIn from './views/CheckIn.vue'
-import AdminDashboard from './views/AdminDashboard.vue'
+import Staff from './views/Staff.vue'
+
 import ForgotPassword from './views/ForgotPassword.vue'
 import ResetPassword from './views/ResetPassword.vue'
 
@@ -61,9 +62,14 @@ const routes = [
     component: CheckIn
   },
   {
+    path: '/staff',
+    name: 'Staff',
+    component: Staff
+  },
+  {
     path: '/admin',
     name: 'AdminDashboard',
-    component: AdminDashboard
+    component: () => import('@/views/AdminView.vue')
   }
 ]
 

@@ -14,6 +14,12 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
+  const url = new URL(request.url);
+
+  // Skip cache for API requests
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
 
   // network-first for navigation and build assets (scripts/styles)
   if (request.mode === 'navigate' || request.destination === 'script' || request.destination === 'style') {

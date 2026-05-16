@@ -32,10 +32,13 @@
                 <p class="text-sm text-gray-600">{{ order.date }} at {{ order.time }}</p>
               </div>
               <div class="text-right">
-                <div :class="getStatusClass(order.status)" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium">
-                  {{ order.status }}
+                <div :class="order.status_id ? getStatusClassById(order.status_id) : getStatusClass(order.status)" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium">
+                  {{ order.status_id ? getStatusText(order.status_id) : order.status }}
                 </div>
                 <p class="text-lg font-bold text-salon-accent1 mt-1">Rp {{ order.total.toLocaleString() }}</p>
+                <p v-if="order.remainingPayment > 0" class="text-sm text-red-500 font-medium">
+                  Sisa bayar: Rp {{ order.remainingPayment.toLocaleString() }}
+                </p>
               </div>
             </div>
 
@@ -58,12 +61,12 @@
 
             <!-- Order Actions -->
             <div class="flex space-x-3 pt-4 border-t border-gray-100">
-              <button class="flex-1 bg-salon-accent1 hover:bg-salon-accent1/80 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+              <button @click="reorder(order)" class="flex-1 bg-salon-accent1 hover:bg-salon-accent1/80 text-white py-2 px-4 rounded-lg font-medium transition-colors">
                 Pesan Lagi
               </button>
-              <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors">
-                Detail
-              </button>
+               <button @click="openOrderDetailModal(order)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors">
+                 Detail
+               </button>
             </div>
           </div>
         </div>
@@ -82,24 +85,39 @@
           </router-link>
         </div>
       </div>
+
+      <!-- Order Detail Modal -->
+      <OrderDetailModal
+        :show="showOrderDetailModal"
+        :order="selectedOrder"
+        :services="services"
+        :employees="employees"
+        @close="closeOrderDetailModal"
+      />
     </main>
   </div>
 </template>
 
 <script>
 import DashboardHeader from '../components/DashboardHeader.vue'
-import { fetchOrders, fetchServices } from '../services/apiService'
+import OrderDetailModal from '../components/OrderDetailModal.vue'
+import { fetchOrders, fetchServices, fetchEmployees } from '../services/apiService'
+import { showSuccess, showWarning } from '../utils/sweetAlert'
 
 export default {
   name: 'HistoryView',
   components: {
-    DashboardHeader
+    DashboardHeader,
+    OrderDetailModal
   },
   data() {
     return {
       orders: [],
       services: [],
-      loading: false
+      employees: [],
+      loading: false,
+      showOrderDetailModal: false,
+      selectedOrder: null
     }
   },
   computed: {
@@ -111,15 +129,18 @@ export default {
       if (!this.currentUser) return []
 
       const servicesMap = new Map((this.services || []).map(s => [s.id, s]))
+      const employeesMap = new Map((this.employees || []).map(e => [e.id, e]))
 
       const normalizedOrders = (this.orders || []).map(order => {
         const service = servicesMap.get(order.service_id)
+        const employee = employeesMap.get(order.employee_id)
         const items = service ? [{
           name: service.name,
           type: 'service',
           price: Number(service.price) || 0,
           quantity: 1,
-          staff: order.employee_id ? `Staff #${order.employee_id}` : null
+          staff: employee ? employee.name : null,
+          image: service.image || null
         }] : []
 
         const total = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0)
@@ -131,7 +152,9 @@ export default {
           date,
           time,
           status: order.status || 'Pending',
+          status_id: order.status_id,
           total,
+          remainingPayment: order.remaining_payment || (total - (order.deposit_amount || 0)),
           items
         }
       })
@@ -147,21 +170,22 @@ export default {
       if (!this.currentUser) return
       this.loading = true
       try {
-        const [ordersRaw, services] = await Promise.all([
-          fetchOrders(),
-          fetchServices()
+        const token = localStorage.getItem('authToken')
+        const [ordersRaw, services, employees] = await Promise.all([
+          fetchOrders(token, this.currentUser?.id),
+          fetchServices(),
+          fetchEmployees()
         ])
 
+        console.log('History: currentUser', this.currentUser)
+        console.log('History: ordersRaw', ordersRaw)
+        console.log('History: services', services)
+
         this.services = services || []
+        this.employees = employees || []
 
-        const userId = this.currentUser?.id
-        const userEmail = this.currentUser?.email
-
-        this.orders = (ordersRaw || []).filter(order => {
-          if (userId && order.user_id !== undefined) return order.user_id === userId
-          if (userEmail && order.customer_email) return order.customer_email === userEmail
-          return false
-        })
+        console.log('History: ordersRaw', ordersRaw)
+        this.orders = ordersRaw || []
       } catch (error) {
         console.error('Failed to load order history', error)
       } finally {
@@ -200,6 +224,65 @@ export default {
           return 'bg-red-100 text-red-800'
         default:
           return 'bg-gray-100 text-gray-800'
+      }
+    },
+    getStatusText(statusId) {
+      const statusMap = {
+        1: 'Pending',
+        2: 'Confirmed',
+        3: 'Checked In',
+        4: 'In Progress',
+        5: 'Completed',
+        6: 'Cancelled'
+      }
+      return statusMap[statusId] || 'Pending'
+    },
+    getStatusClassById(statusId) {
+      const classMap = {
+        1: 'bg-yellow-100 text-yellow-800',
+        2: 'bg-blue-100 text-blue-800',
+        3: 'bg-green-100 text-green-800',
+        4: 'bg-purple-100 text-purple-800',
+        5: 'bg-gray-100 text-gray-800',
+        6: 'bg-red-100 text-red-800'
+      }
+      return classMap[statusId] || 'bg-gray-100 text-gray-800'
+    },
+    openOrderDetailModal(order) {
+      this.selectedOrder = order
+      this.showOrderDetailModal = true
+    },
+    closeOrderDetailModal() {
+      this.showOrderDetailModal = false
+      this.selectedOrder = null
+    },
+    reorder(order) {
+      // Add order items to cart
+      const cart = JSON.parse(localStorage.getItem('salon-cart') || '[]')
+      
+      if (order.items && order.items.length > 0) {
+        order.items.forEach(item => {
+          const cartItem = {
+            id: `service-${item.id || Date.now()}-${Math.random()}`,
+            type: item.type || 'service',
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity || 1,
+            staff: item.staff || null,
+            image: item.image || null,
+            date: order.date || null,
+            time: order.time || null
+          }
+          cart.push(cartItem)
+        })
+        
+        localStorage.setItem('salon-cart', JSON.stringify(cart))
+        showSuccess('Ditambahkan ke Keranjang', `${order.items.length} item berhasil ditambahkan ke keranjang`)
+        
+        // Redirect to dashboard to continue booking
+        this.$router.push('/dashboard')
+      } else {
+        showWarning('Tidak dapat pesan ulang', 'Item pesanan tidak ditemukan')
       }
     }
   }

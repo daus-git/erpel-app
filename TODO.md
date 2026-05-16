@@ -1,13 +1,8 @@
-# TODO: Add CRUD Admin Stock with localStorage
+# Service Images Fix Progress
 
-## Tasks
-- [x] Update AdminStockTab.vue to use stockStorage for data persistence
-- [x] Add modal/form for creating new stock items
-- [x] Implement edit functionality with modal/form
-- [x] Ensure delete operation persists to localStorage
-- [x] Load stock.json as initial data into localStorage if not present
-
-## Followup Steps
-- [x] Test CRUD operations in browser (server running at http://localhost:8080)
-- [x] Verify data persistence across page reloads (using stock.json as initial data)
-- [x] Reverted to original implementation as requested
+✅ [DONE] Understand issue: Backend returns absolute image_url, ServiceCard fails proxy  
+✅ [DONE] Plan: Edit ServiceCard.vue imageUrl() to strip host for /storage proxy  
+- [ ] 1. Edit src/components/ServiceCard.vue  
+- [ ] 2. Test npm run serve  
+- [ ] 3. Verify images load  
+✅ [DONE] Backend image_url confirmed working directly

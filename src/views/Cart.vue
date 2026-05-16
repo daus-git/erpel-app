@@ -110,7 +110,7 @@
               <span class="font-medium">Rp {{ serviceFee.toLocaleString() }}</span>
             </div>
             <div v-if="hasServices" class="flex justify-between text-sm">
-              <span class="text-gray-600">Deposit Layanan (40%)</span>
+               <span class="text-gray-600">Deposit Layanan ({{ cartItems[0]?.deposit_percentage || 30 }}%)</span>
               <span class="font-medium text-blue-600">Rp {{ depositAmount.toLocaleString() }}</span>
             </div>
             <div v-if="hasServices" class="flex justify-between text-sm">
@@ -133,7 +133,7 @@
                 <div class="text-sm">
                   <p class="font-medium text-blue-900">Sistem Deposit untuk Layanan</p>
                   <p class="text-blue-700 mt-1">
-                    Bayar deposit 40% sekarang, sisanya bayar di toko saat layanan dilakukan.
+                     Bayar deposit {{ cartItems[0]?.deposit_percentage || 30 }}% sekarang, sisanya bayar di toko saat layanan dilakukan.
                   </p>
                 </div>
               </div>
@@ -216,7 +216,7 @@
                     </div>
                     <div>
                       <p class="font-medium text-gray-900">Payment Gateway</p>
-                      <p class="text-sm text-gray-600" v-if="hasServices">Bayar deposit 40% online, sisanya di toko</p>
+                       <p class="text-sm text-gray-600" v-if="hasServices">Bayar deposit {{ cartItems[0]?.deposit_percentage || 30 }}% online, sisanya di toko</p>
                       <p class="text-sm text-gray-600" v-else>Bayar online dengan kartu kredit/debit</p>
                     </div>
                   </div>
@@ -251,8 +251,7 @@
 <script>
 import { showSuccess, showError } from '@/utils/sweetAlert'
 import { requestSnapPayment } from '@/api/midtrans'
-import { createOrder, fetchUsers, createProgress } from '@/services/apiService'
-import emailjs from '@emailjs/browser'
+import { createOrder, fetchCurrentUser, createProgress } from '@/services/apiService'
 
 export default {
   name: 'CartView',
@@ -271,10 +270,10 @@ export default {
       return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
     },
     serviceFee() {
-      return Math.round(this.subtotal * 0.05) // 5% service fee
+      return 0 // No service fee - deposit calculated from service deposit_percentage
     },
     total() {
-      return this.subtotal + this.serviceFee
+      return this.subtotal
     },
     totalItems() {
       return this.cartItems.reduce((total, item) => total + item.quantity, 0)
@@ -285,12 +284,19 @@ export default {
     depositAmount() {
       return this.cartItems
         .filter(item => item.type === 'service')
-        .reduce((total, item) => total + Math.round(item.price * 0.4 * item.quantity), 0)
+        .reduce((total, item) => {
+          const depositPercent = item.deposit_percentage || 30
+          return total + Math.round(item.price * (depositPercent / 100) * item.quantity)
+        }, 0)
     },
     remainingAmount() {
       return this.cartItems
         .filter(item => item.type === 'service')
-        .reduce((total, item) => total + (item.price - Math.round(item.price * 0.4)) * item.quantity, 0) +
+        .reduce((total, item) => {
+          const depositPercent = item.deposit_percentage || 30
+          const deposit = Math.round(item.price * (depositPercent / 100))
+          return total + (item.price - deposit) * item.quantity
+        }, 0) +
         this.cartItems
           .filter(item => item.type === 'product')
           .reduce((total, item) => total + (item.price * item.quantity), 0)
@@ -340,21 +346,20 @@ export default {
 
       if (method === 'gateway') {
         try {
-          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
-          const amountToPay = this.hasServices ? this.depositAmount : this.total
-
-          // Buat order dulu, tapi jangan blokir alur Midtrans jika API error
-          try {
-            await this.createOrdersAfterMidtransLink()
-          } catch (orderErr) {
-            console.warn('Order creation failed, continuing to Midtrans', orderErr)
+          let orderId = null
+          const createdOrders = await this.createOrdersAfterMidtransLink()
+          if (createdOrders?.length) {
+            const firstOrder = createdOrders[0]
+            orderId = firstOrder?.id || firstOrder?.order_id
           }
 
+          // Calculate total deposit for payment
+          const totalDeposit = createdOrders.reduce((sum, order) => sum + (order.deposit_amount || 0), 0)
+          
           const response = await requestSnapPayment({
-            amount: amountToPay,
-            email: currentUser.email || '',
-            description: 'Pembayaran Salon',
-            order_id: `order-${Date.now()}`
+            order_id: orderId,
+            amount: totalDeposit, // Send deposit amount, not total
+            token: localStorage.getItem('authToken')
           })
           console.log('Midtrans snap response:', response)
           if (response?.redirect_url) {
@@ -393,10 +398,11 @@ export default {
 
       const itemsWithPayment = this.cartItems.map(item => {
         if (item.type === 'service') {
-          const deposit = Math.round(item.price * 0.4) // 40% deposit for services
+          const depositPercent = item.deposit_percentage || 30
+          const deposit = Math.round(item.price * (depositPercent / 100))
           const remaining = item.price - deposit
-          totalDeposit += deposit * item.quantity
-          totalRemaining += remaining * item.quantity
+        totalDeposit += deposit
+        totalRemaining += remaining
           return {
             type: item.type,
             name: item.name,
@@ -474,22 +480,29 @@ export default {
       if (!serviceItems.length) return
 
       const token = localStorage.getItem('authToken')
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      let currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
       const fallbackDate = this.getTodayDate()
       const fallbackTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
-      // Resolve user_id: if missing, try to fetch user list and match by email
-      let resolvedUserId = currentUser.id || null
-      if (!resolvedUserId && currentUser.email && token) {
+      // Fetch full user data from API to get phone number
+      if (token) {
         try {
-          const users = await fetchUsers(token)
-          const matched = Array.isArray(users) ? users.find(u => u.email === currentUser.email) : null
-          if (matched?.id) {
-            resolvedUserId = matched.id
-            localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, id: resolvedUserId }))
+          const apiUser = await fetchCurrentUser(token)
+          console.log('API User response:', apiUser)
+          if (apiUser) {
+            const userData = apiUser.data || apiUser.user || apiUser
+            currentUser = {
+              ...currentUser,
+              id: userData.id || currentUser.id,
+              name: userData.name || currentUser.name,
+              email: userData.email || currentUser.email,
+              phone: userData.phone || userData.telephone || ''
+            }
+            localStorage.setItem('currentUser', JSON.stringify(currentUser))
+            console.log('Updated currentUser with phone:', currentUser)
           }
         } catch (err) {
-          console.warn('Failed to resolve user id from API', err)
+          console.warn('Failed to fetch current user from API', err)
         }
       }
 
@@ -497,15 +510,28 @@ export default {
         .map(item => {
           const serviceId = item.serviceId || this.extractServiceId(item.id)
           if (!serviceId) return null
-          return {
-            user_id: resolvedUserId,
-            service_id: serviceId,
-            employee_id: item.employeeId || null,
-            order_date: item.date || fallbackDate,
-            order_time: item.time || fallbackTime,
-            total_price: item.price,
-            status: 'confirmed'
-          }
+          
+          // Calculate deposit from service deposit_percentage (default 30%)
+          const totalPrice = item.price || 0
+          const depositPercent = item.deposit_percentage || 30
+          const depositAmount = Math.round(totalPrice * (depositPercent / 100))
+          
+           return {
+             user_id: currentUser.id,
+             user_name: currentUser.name || '',
+             user_phone: currentUser.phone || currentUser.user_phone || '',
+             service_id: serviceId,
+             employee_id: item.employeeId || null,
+             order_date: item.date || fallbackDate,
+             order_time: item.time || fallbackTime,
+             status_id: 1,
+             notes: item.notes || null,
+             price: totalPrice,
+             deposit_percentage: depositPercent,
+             deposit_amount: depositAmount,
+             total_price: totalPrice,
+             remaining_payment: totalPrice - depositAmount
+           }
         })
         .filter(Boolean)
 
@@ -539,52 +565,12 @@ export default {
         await Promise.all(progressPayloads.map(p => createProgress(p, token)))
       }
 
-      // Send email reminders (non-blocking)
-      this.sendEmailReminders(createdOrders, serviceItems).catch(err => {
-        console.warn('Failed to send email reminders', err)
-      })
-    },
-    async sendEmailReminders(createdOrders, serviceItems) {
-      if (!Array.isArray(createdOrders) || !createdOrders.length) return
+// Send email reminders (non-blocking) - now handled by backend
+      // this.sendEmailReminders(createdOrders, serviceItems).catch(err => {
+      //   console.warn('Failed to send email reminders', err)
+      // })
 
-      // Vue CLI hanya mengekspose env dengan prefix VUE_APP_
-      const serviceIdEnv = process.env.VUE_APP_EMAILJS_SERVICE_ID || 'service_gmail'
-      const templateIdEnv = process.env.VUE_APP_EMAILJS_TEMPLATE_ID || 'template_2q2o43b'
-      const publicKeyEnv = process.env.VUE_APP_EMAILJS_PUBLIC_KEY || 'Qis4WItcfBprla5gB'
-
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
-      const toEmail = currentUser.email
-      const toName = currentUser.name || 'Customer'
-      if (!toEmail) {
-        console.warn('No recipient email; skip email reminders')
-        return
-      }
-
-      const serviceLookup = new Map((serviceItems || []).map(item => [item.serviceId || item.id, item]))
-      const firstOrder = createdOrders[0] || {}
-      const firstService = serviceLookup.get(firstOrder.service_id) || serviceItems[0] || {}
-      const date = firstOrder.order_date || firstOrder.date || this.getTodayDate()
-      const time = firstOrder.order_time || firstOrder.time || this.pickupTime || '-'
-      const serviceName = firstService.name || `Service #${firstOrder.service_id || ''}`
-
-      const templateParams = {
-        name: toName,
-        email: toEmail,
-        date,
-        time,
-        service: serviceName
-      }
-
-      console.log('Sending email reminder with params:', templateParams)
-
-      try {
-        await emailjs.send(serviceIdEnv, templateIdEnv, templateParams, {
-          publicKey: publicKeyEnv
-        })
-        console.log('Email reminder sent via EmailJS')
-      } catch (err) {
-        console.error('EmailJS send failed', err)
-      }
+      return createdOrders
     }
   }
 }

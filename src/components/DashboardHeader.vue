@@ -26,9 +26,6 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </router-link>
-          <button @click="handleCheckIn" :disabled="!hasIncompleteOrders" class="bg-salon-accent1 hover:bg-salon-accent1/80 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md font-body">
-            Check-in
-          </button>
         </div>
       </div>
     </div>
@@ -36,8 +33,6 @@
 </template>
 
 <script>
-import { showWarning } from '@/utils/sweetAlert'
-
 export default {
   name: 'DashboardHeader',
 
@@ -52,37 +47,9 @@ export default {
     cartItemCount() {
       const cart = JSON.parse(localStorage.getItem('salon-cart') || '[]')
       return cart.reduce((total, item) => total + item.quantity, 0)
-    },
-    hasIncompleteOrders() {
-      if (!this.currentUser.email) return false
-
-      const history = JSON.parse(localStorage.getItem('order-history') || '[]')
-      return history.some(order =>
-        order.userId === this.currentUser.email &&
-        (order.status === 'Pending Payment' || order.status === 'Processing' || order.status === 'Scheduled')
-      )
-    },
-    incompleteOrderId() {
-      if (!this.currentUser.email) return null
-
-      const history = JSON.parse(localStorage.getItem('order-history') || '[]')
-      const incompleteOrders = history.filter(order =>
-        order.userId === this.currentUser.email &&
-        (order.status === 'Pending Payment' || order.status === 'Processing' || order.status === 'Scheduled')
-      )
-
-      return incompleteOrders.length > 0 ? incompleteOrders[0].id : null
     }
   },
   methods: {
-    handleCheckIn() {
-      if (!this.hasIncompleteOrders) {
-        showWarning('Pesanan Belum Ada', 'Maaf, Anda belum memiliki pesanan yang belum selesai. Silakan buat pesanan terlebih dahulu.')
-        return
-      }
-
-      this.$router.push('/checkin')
-    },
     logout() {
       localStorage.removeItem('currentUser')
       this.$router.push('/login')

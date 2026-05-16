@@ -6,9 +6,18 @@ module.exports = defineConfig({
   // if building on Netlify serve from root; otherwise use repo subpath in production
   publicPath: isNetlify ? '/' : (isProd ? '/salon-app/' : '/'),
   devServer: {
+    port: 3000,
     proxy: {
       '/api': {
-        target: 'https://salon-api-production.up.railway.app',
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true
+      },
+      '/images': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true
+      },
+      '/storage': {
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true
       }
     }

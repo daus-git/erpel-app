@@ -44,15 +44,22 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service Type</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="progress in progressData" :key="progress.id" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden w-24">
+                        <div :class="getProgressBarClass(progress.status)" class="h-full rounded-full transition-all duration-500" :style="{ width: getProgressWidth(progress.status) }"></div>
+                      </div>
+                      <span class="ml-3 text-xs text-gray-500">{{ getProgressText(progress.status) }}</span>
+                    </div>
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ progress.customerName }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ progress.time }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -60,8 +67,6 @@
                       {{ formatStatus(progress.status) }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ progress.serviceType }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ progress.staff }}</td>
                 </tr>
               </tbody>
             </table>
@@ -75,6 +80,7 @@
       :showModal="showBookingModal"
       :selectedService="selectedServiceForBooking"
       :employees="employees"
+      :orders="orders"
       @close="closeBookingModal"
       @confirm="handleBookingConfirm"
     />
@@ -155,23 +161,47 @@ export default {
         const ordersMap = new Map((ordersRaw || []).map(o => [o.id, o]))
 
         const todayLocal = this.getTodayDate()
+        console.log('Progress Raw:', progressRaw)
+        console.log('Orders Raw:', ordersRaw)
+        
         this.progressData = (progressRaw || [])
           .map(item => {
             const relatedOrder = ordersMap.get(item.order_id)
+            console.log('Item:', item, 'Related Order:', relatedOrder)
             if (!relatedOrder) return null
             const orderDate = (relatedOrder.order_date || relatedOrder.date || '').toString().substring(0, 10)
             if (orderDate !== todayLocal) return null
             const service = servicesMap.get(relatedOrder?.service_id)
             const userFromOrder = relatedOrder?.user_id ? usersMap.get(relatedOrder.user_id) : null
             const employeeName = relatedOrder?.employee_id ? (employeesMap.get(relatedOrder.employee_id)?.name || `Staff #${relatedOrder.employee_id}`) : '-'
-            const rawTime = item.updated_at || item.created_at || relatedOrder?.time || '-'
-            const progressTime = this.extractTime(rawTime)
-            const rawStatus = item.status || 'pending'
-            const normalizedStatus = typeof rawStatus === 'string' ? rawStatus.replace(/\s+/g, '_').toLowerCase() : 'pending'
+            
+            // Use order time (time chosen by customer)
+            const orderTime = relatedOrder?.order_time || relatedOrder?.time || item.created_at || '-'
+            const progressTime = this.extractTime(orderTime)
+            
+            // Use order status_id to get status text
+            const statusId = relatedOrder?.status_id || 1
+            const statusMap = {
+              1: 'pending',
+              2: 'confirmed',
+              3: 'checked_in',
+              4: 'in_progress',
+              5: 'completed',
+              6: 'cancelled'
+            }
+            const normalizedStatus = statusMap[statusId] || 'pending'
+            
+            // Get customer name from multiple sources
+            const customerName = relatedOrder?.customer_name || 
+                                 relatedOrder?.user_name || 
+                                 userFromOrder?.name || 
+                                 `Customer #${relatedOrder?.user_id}` ||
+                                 'Customer'
+            
             return {
               id: item.id,
               time: progressTime,
-              customerName: relatedOrder?.customer_name || userFromOrder?.name || 'Customer',
+              customerName: customerName,
               serviceType: service?.name || 'Service',
               staff: employeeName,
               status: normalizedStatus
@@ -210,14 +240,50 @@ export default {
     getStatusClass(status) {
       const normalized = (status || '').toLowerCase()
       const classes = {
-        completed: 'bg-green-100 text-green-800',
-        finished: 'bg-green-100 text-green-800',
-        in_progress: 'bg-blue-100 text-blue-800',
-        waiting: 'bg-yellow-100 text-yellow-800',
         pending: 'bg-yellow-100 text-yellow-800',
-        scheduled: 'bg-gray-100 text-gray-800'
+        confirmed: 'bg-blue-100 text-blue-800',
+        checked_in: 'bg-green-100 text-green-800',
+        in_progress: 'bg-indigo-100 text-indigo-800',
+        completed: 'bg-gray-100 text-gray-800',
+        cancelled: 'bg-red-100 text-red-800'
       }
       return classes[normalized] || 'bg-gray-100 text-gray-800'
+    },
+    getProgressBarClass(status) {
+      const normalized = (status || '').toLowerCase()
+      const classes = {
+        pending: 'bg-yellow-500',
+        confirmed: 'bg-blue-400',
+        checked_in: 'bg-blue-500',
+        in_progress: 'bg-indigo-500',
+        completed: 'bg-green-500',
+        cancelled: 'bg-red-500'
+      }
+      return classes[normalized] || 'bg-gray-400'
+    },
+    getProgressWidth(status) {
+      const normalized = (status || '').toLowerCase()
+      const widths = {
+        pending: '20%',
+        confirmed: '40%',
+        checked_in: '60%',
+        in_progress: '80%',
+        completed: '100%',
+        cancelled: '0%'
+      }
+      return widths[normalized] || '10%'
+    },
+    getProgressText(status) {
+      const normalized = (status || '').toLowerCase()
+      const texts = {
+        pending: 'Menunggu',
+        confirmed: 'Dikonfirmasi',
+        checked_in: 'Check In',
+        in_progress: 'Sedang Dikerjakan',
+        completed: 'Selesai',
+        cancelled: 'Dibatalkan'
+      }
+      return texts[normalized] || 'Menunggu'
     },
     loadCart() {
       const cart = JSON.parse(localStorage.getItem('salon-cart') || '[]')
@@ -303,7 +369,7 @@ export default {
           serviceId: service.id,
           name: service.name,
           price: service.price,
-          image: service.image,
+          image: service.image_url || service.image,
           type: 'service',
           quantity: 1,
           date,
@@ -319,7 +385,7 @@ export default {
             serviceId: service.id,
             name: service.name,
             price: service.price,
-            image: service.image,
+            image: service.image_url || service.image,
             type: 'service',
             quantity: 1,
             date,

@@ -141,15 +141,18 @@ export default {
           id: userPayload.id || userPayload.user_id || null,
           email: this.email,
           name: userPayload.name || this.email.split('@')[0],
+          phone: userPayload.phone || '',
           level: userPayload.role || userPayload.level || 'user'
         }))
 
         showSuccess('Login Berhasil', 'Anda berhasil masuk.')
 
-        // Redirect admin ke dashboard admin jika role admin tersedia
+        // Redirect based on role
         const level = result?.user?.role || 'user'
         if (level === 'admin') {
           this.router.push('/admin')
+        } else if (level === 'staff' || level === 'employee') {
+          this.router.push('/staff')
         } else {
           this.router.push('/dashboard')
         }

@@ -3,15 +3,15 @@ import Swal from 'sweetalert2'
 // Custom SweetAlert2 configuration to match the salon theme
 const salonSwal = Swal.mixin({
   customClass: {
-    popup: 'bg-white rounded-2xl shadow-2xl border-2 border-salon-primary',
+    popup: 'bg-white rounded-2xl shadow-2xl border-2 border-salon-accent1',
     title: 'text-salon-text font-heading text-2xl font-bold',
     htmlContainer: 'text-salon-text font-body',
-    confirmButton: 'bg-salon-primary hover:bg-salon-primary/80 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200',
+    confirmButton: 'bg-salon-accent1 hover:bg-salon-highlight text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200',
     cancelButton: 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-6 rounded-lg transition-colors duration-200 mr-3',
-    input: 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-salon-primary focus:border-salon-primary'
+    input: 'border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-salon-accent1 focus:border-salon-accent1'
   },
   buttonsStyling: false,
-  confirmButtonColor: '#8B5A3C', // salon-primary color
+  confirmButtonColor: '#B08C6A', // salon-accent1 color
   cancelButtonColor: '#6B7280'
 })
 

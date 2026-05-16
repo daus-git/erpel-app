@@ -170,6 +170,7 @@ export default {
       try {
         await createUser({
           name: this.name,
+          phone: this.phone,
           email: this.email,
           password: this.password
         })

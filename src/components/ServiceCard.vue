@@ -1,10 +1,10 @@
 <template>
   <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
     <div class="relative">
-      <img :src="imageUrl" :alt="service.name" class="w-full h-48 object-cover">
+      <img :src="imageUrl" :alt="service.name" @error="onImageError" class="w-full h-48 object-cover" :key="imageUrl">
       <div class="absolute top-4 right-4">
         <span class="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-          {{ service.duration }}
+          {{ formatDuration(service.duration_minutes) }}
         </span>
       </div>
     </div>
@@ -82,10 +82,37 @@ export default {
         .reduce((total, item) => total + item.quantity, 0)
     },
     imageUrl() {
-      const image = this.service.image || ''
-      if (image.startsWith('http')) return image
-      if (image.startsWith('/')) return image // served from /public
-      return `/${image}`
+      // Handle backend image_url (absolute → proxy path) or legacy image
+      let url = this.service.image_url || this.service.image || ''
+      
+      // Convert absolute backend URLs to Vue proxy paths (/storage/* → backend:8000)
+      if (url) {
+        url = url.replace(/^https?:\/[^/]+/, '')
+        console.log(`ServiceCard ${this.service.name} image:`, url)
+      }
+      
+      // Legacy image handling (if relative path)
+      if (!url.startsWith('http') && url) {
+        if (url.startsWith('/storage') || url.startsWith('/images')) {
+          url = `/storage${url.startsWith('/storage') ? '' : '/images/' + url}`
+        } else {
+          url = `/storage/${url}`
+        }
+      }
+      
+      // Smart defaults based on service name if no image
+      if (!url) {
+        const name = this.service.name?.toLowerCase() || ''
+        if (name.includes('hair') || name.includes('cut')) url = '/images/haircut&styling.jpg'
+        else if (name.includes('facial')) url = '/images/facialtreatment.jpg'
+        else if (name.includes('massage')) url = '/images/bodymassage.jpg'
+        else if (name.includes('color')) url = '/images/haircoloring.jpg'
+        else if (name.includes('nail')) url = '/images/manicurepedicure.jpg'
+        else url = '/images/facialtreatment.jpg'
+        console.log(`ServiceCard ${this.service.name} default:`, url)
+      }
+      
+      return url
     },
     showQuantityControls() {
       // For services, show quantity controls if already in cart
@@ -103,7 +130,21 @@ export default {
       selectedRemoval: null
     }
   },
+  mounted() {
+    this.$nextTick(() => {
+      console.log('ServiceCard mounted:', this.service.name, 'imageUrl:', this.imageUrl)
+    })
+  },
   methods: {
+    formatDuration(minutes) {
+      if (!minutes) return ''
+      if (minutes >= 60) {
+        const h = Math.floor(minutes / 60)
+        const m = minutes % 60
+        return m ? `${h}j ${m}m` : `${h} jam`
+      }
+      return `${minutes} menit`
+    },
     increaseQuantity() {
       // For services, adding more means opening booking modal again
       this.handleBookService()
@@ -138,6 +179,10 @@ export default {
     },
     handleBookService() {
       this.$emit('book-service', this.service)
+    },
+    onImageError(event) {
+      console.error(`Failed to load image for ${this.service.name}:`, event.target.src)
+      event.target.src = '/images/facialtreatment.jpg'
     }
   }
 }

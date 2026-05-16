@@ -39,8 +39,11 @@
             required
           >
             <option value="">Choose time</option>
-            <option v-for="time in availableTimes" :key="time" :value="time">{{ time }}</option>
+            <option v-for="time in availableTimeSlots" :key="time" :value="time">{{ time }}</option>
           </select>
+          <p v-if="bookingData.date && availableTimeSlots.length === 0" class="text-sm text-red-500 mt-1">
+            Tidak ada waktu tersedia untuk tanggal ini
+          </p>
         </div>
 
         <!-- Staff Selection -->
@@ -114,6 +117,10 @@ export default {
     employees: {
       type: Array,
       default: () => []
+    },
+    orders: {
+      type: Array,
+      default: () => []
     }
   },
   emits: ['close', 'confirm'],
@@ -138,15 +145,138 @@ export default {
       const today = new Date()
       return today.toISOString().split('T')[0]
     },
+    allStaffNames() {
+      return (this.employees || []).map(emp => emp.name).filter(Boolean)
+    },
     availableStaff() {
-      const staffNames = (this.employees || []).map(emp => emp.name).filter(Boolean)
-      return staffNames.length ? staffNames : ['Random Staff']
+      const names = this.allStaffNames
+      if (!names.length) return ['Random Staff']
+
+      if (!this.bookingData.date) {
+        // No date yet — show all
+        return names
+      }
+
+      // Get busy staff for selected date (+ time if selected)
+      const busyStaff = this.getBusyStaff(this.bookingData.date, this.bookingData.time || null)
+
+      const available = names.filter(name => !busyStaff.includes(name))
+      return available.length ? available : []
+    },
+    availableTimeSlots() {
+      if (!this.bookingData.date || !this.selectedService) {
+        return this.availableTimes
+      }
+
+      const now = new Date()
+      const todayStr = now.toISOString().split('T')[0]
+      const currentMinutes = now.getHours() * 60 + now.getMinutes()
+
+      // Filter time slots based on staff availability
+      return this.availableTimes.filter(time => {
+        // Skip waktu yang sudah lewat
+        if (this.bookingData.date === todayStr) {
+          const timeMinutes = this.timeToMinutes(time)
+          if (timeMinutes < currentMinutes) return false
+        }
+
+        const busyStaff = this.getBusyStaff(this.bookingData.date, time)
+        // At least one staff must be available
+        return this.allStaffNames.some(name => !busyStaff.includes(name))
+      })
     }
   },
   methods: {
     closeModal() {
       this.resetForm()
       this.$emit('close')
+    },
+    // Get busy staff for a specific date and time
+    getBusyStaff(date, time) {
+      if (!date) return []
+      
+      const busyStaff = []
+      const serviceDuration = this.getServiceDuration()
+      const hasTime = !!time
+      
+      // Convert time to minutes for comparison
+      const selectedTimeMinutes = hasTime ? this.timeToMinutes(time) : 0
+      const selectedEndTime = hasTime ? selectedTimeMinutes + serviceDuration : 0
+
+      // Current time for "estimated end already passed" check
+      const now = new Date()
+      const todayStr = now.toISOString().split('T')[0]
+      const currentMinutes = now.getHours() * 60 + now.getMinutes()
+      
+      // Check all existing orders
+      for (const order of (this.orders || [])) {
+        // Skip completed or cancelled orders
+        const statusId = order.status_id
+        if (statusId === 5 || statusId === 6) continue
+        
+        // Normalize order date (API returns ISO like "2026-05-16T00:00:00.000000Z")
+        const rawDate = order.order_date || order.date
+        if (!rawDate) continue
+        const orderDate = rawDate.substring(0, 10)
+        if (orderDate !== date) continue
+        
+        // Get order time — skip orders without a time
+        const orderTime = order.order_time || order.time
+        if (!orderTime) continue
+
+        const orderDuration = order.service?.duration_minutes || 60
+        const orderTimeMinutes = this.timeToMinutes(orderTime)
+        const orderEndMinutes = orderTimeMinutes + orderDuration
+        
+        // Skip if estimated end time has already passed (staff is available again)
+        if (orderDate === todayStr && orderEndMinutes <= currentMinutes) continue
+        if (orderDate < todayStr) continue
+        
+        if (hasTime) {
+          // Check if times overlap
+          if (this.timesOverlap(selectedTimeMinutes, selectedEndTime, orderTimeMinutes, orderEndMinutes)) {
+            const staffName = order.employee?.name
+            if (staffName && !busyStaff.includes(staffName)) {
+              busyStaff.push(staffName)
+            }
+          }
+        } else {
+          // No time selected: staff is busy if order hasn't ended yet
+          const staffName = order.employee?.name
+          if (staffName && !busyStaff.includes(staffName)) {
+            busyStaff.push(staffName)
+          }
+        }
+      }
+      
+      return busyStaff
+    },
+    // Convert time string (HH:MM) to minutes
+    timeToMinutes(time) {
+      if (!time) return 0
+      const [hours, minutes] = time.split(':').map(Number)
+      return hours * 60 + minutes
+    },
+    // Check if two time ranges overlap
+    timesOverlap(start1, end1, start2, end2) {
+      return start1 < end2 && start2 < end1
+    },
+    // Get service duration in minutes
+    getServiceDuration() {
+      if (!this.selectedService) return 60 // default 60 minutes
+      
+      // Try to parse duration from service
+      const duration = this.selectedService.duration_minutes || 
+                       this.selectedService.duration ||
+                       60
+      
+      // If duration is a string like "60 menit" or "1 hour", parse it
+      if (typeof duration === 'string') {
+        const match = duration.match(/(\d+)/)
+        return match ? parseInt(match[1]) : 60
+      }
+      
+      return parseInt(duration) || 60
     },
     confirmBooking() {
       if (!this.bookingData.date || !this.bookingData.time) {
@@ -160,7 +290,7 @@ export default {
       }
 
       if (!this.availableStaff.length) {
-        showWarning('Staff tidak tersedia', 'Tidak ada staff yang tersedia saat ini.')
+        showWarning('Staff tidak tersedia', 'Semua staff sudah dibooking pada waktu ini. Silakan pilih waktu lain.')
         return
       }
 
@@ -230,6 +360,13 @@ export default {
         console.error('ServiceBookingModal opened without selectedService')
         this.closeModal()
       }
+    },
+    'bookingData.date'() {
+      this.bookingData.time = ''
+      this.bookingData.staff = 'random'
+    },
+    'bookingData.time'() {
+      this.bookingData.staff = 'random'
     }
   }
 }
