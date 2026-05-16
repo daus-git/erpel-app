@@ -1,5 +1,5 @@
 // Allow overriding API base for local proxy to avoid CORS during development
-const BASE_URL = process.env.VUE_APP_API_BASE || 'https://erpel-api-production.up.railway.app/api'
+const BASE_URL = process.env.VUE_APP_API_BASE || 'https://erpel-api-production-b885.up.railway.app/api'
 const DEBUG = process.env.NODE_ENV === 'development'
 
 // Basic fetch wrapper for the Salon API
