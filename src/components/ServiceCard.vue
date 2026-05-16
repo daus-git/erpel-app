@@ -181,8 +181,16 @@ export default {
       this.$emit('book-service', this.service)
     },
     onImageError(event) {
+      if (event.target.dataset.fallback) return
+      event.target.dataset.fallback = 'true'
       console.error(`Failed to load image for ${this.service.name}:`, event.target.src)
-      event.target.src = '/images/facialtreatment.jpg'
+      event.target.src = 'data:image/svg+xml,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">' +
+        '<rect fill="#f3f4f6" width="400" height="300"/>' +
+        '<text fill="#9ca3af" font-family="sans-serif" font-size="16" text-anchor="middle" x="200" y="150">' +
+        this.service.name.replace(/&/g, '&amp;').replace(/</g, '&lt;') +
+        '</text></svg>'
+      )
     }
   }
 }
